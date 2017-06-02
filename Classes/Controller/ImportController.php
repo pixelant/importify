@@ -43,7 +43,7 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
      * @param Pixelant\Importify\Domain\Model\Import
      * @return void
      */
-    public function showAction(\Vendor\Importtypo3\Domain\Model\Import $import)
+    public function showAction(\Pixelant\Importify\Domain\Model\Import $import)
     {
         $this->view->assign('import', $import);
     }

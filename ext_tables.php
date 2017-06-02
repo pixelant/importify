@@ -2,13 +2,13 @@
 defined('TYPO3_MODE') || die('Access denied.');
 
 call_user_func(
-    function()
+    function($extKey)
     {
 
         if (TYPO3_MODE === 'BE') {
 
             \TYPO3\CMS\Extbase\Utility\ExtensionUtility::registerModule(
-                'Pixelant.Importify', //. $_EXTKEY,
+                'Pixelant.Importify',
                 'tools', // Make module a submodule of 'tools'
                 'importdata', // Submodule key
                 '', // Position
@@ -17,8 +17,8 @@ call_user_func(
                 ],
                 [
                     'access' => 'user,group',
-                    'icon'   => 'EXT:importify/Resources/Public/Icons/user_mod_importdata.svg',
-                    'labels' => 'LLL:EXT:importify/Resources/Private/Language/locallang_importdata.xlf',
+                    'icon'   => 'EXT:' . $extKey . '/Resources/Public/Icons/user_mod_importdata.svg',
+                    'labels' => 'LLL:EXT:' . $extKey . '/Resources/Private/Language/locallang_importdata.xlf',
                 ]
             );
 
@@ -29,5 +29,6 @@ call_user_func(
         \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addLLrefForTCAdescr('tx_importify_domain_model_import', 'EXT:importify/Resources/Private/Language/locallang_csh_tx_importify_domain_model_import.xlf');
         \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::allowTableOnStandardPages('tx_importify_domain_model_import');
 
-    }
+    },
+    $_EXTKEY
 );

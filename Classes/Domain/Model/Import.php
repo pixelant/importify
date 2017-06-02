@@ -17,4 +17,4 @@ namespace Pixelant\Importify\Domain\Model;
  */
 class Import extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
 {
-    }
+}

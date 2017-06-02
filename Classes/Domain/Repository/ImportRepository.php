@@ -17,4 +17,5 @@ namespace Pixelant\Importify\Domain\Repository;
  */
 class ImportRepository extends \TYPO3\CMS\Extbase\Persistence\Repository
 {
-    }
+
+}
