@@ -1,0 +1,90 @@
+{
+    "modules": [
+        {
+            "config": {
+                "position": [
+                    273,
+                    107
+                ]
+            },
+            "name": "New Model Object",
+            "value": {
+                "actionGroup": {
+                    "_default0_list": true,
+                    "_default1_show": true,
+                    "_default2_new_create": false,
+                    "_default3_edit_update": false,
+                    "_default4_delete": false,
+                    "customActions": []
+                },
+                "name": "Import",
+                "objectsettings": {
+                    "addDeletedField": true,
+                    "addHiddenField": true,
+                    "addStarttimeEndtimeFields": true,
+                    "aggregateRoot": true,
+                    "categorizable": false,
+                    "description": "",
+                    "mapToTable": "",
+                    "parentClass": "",
+                    "sorting": false,
+                    "type": "Entity",
+                    "uid": "326150650129"
+                },
+                "propertyGroup": {
+                    "properties": []
+                },
+                "relationGroup": {
+                    "relations": []
+                }
+            }
+        }
+    ],
+    "properties": {
+        "backendModules": [
+            {
+                "actions": {
+                    "controllerActionCombinations": ""
+                },
+                "description": "import data",
+                "key": "importdata",
+                "mainModule": "tools",
+                "name": "Import Data",
+                "tabLabel": "Import Data"
+            }
+        ],
+        "description": "Importer for TYPO3",
+        "emConf": {
+            "category": "be",
+            "custom_category": "",
+            "dependsOn": "typo3 => 8.6.0-8.7.99\n",
+            "disableLocalization": false,
+            "disableVersioning": false,
+            "skipGenerateDocumentationTemplate": false,
+            "sourceLanguage": "en",
+            "state": "alpha",
+            "targetVersion": "8.6.0-8.6.99",
+            "version": "1.0.0"
+        },
+        "extensionKey": "importify",
+        "name": "Importify",
+        "originalExtensionKey": "importtypo3",
+        "originalVendorName": "Pixelant",
+        "persons": [
+            {
+                "company": "Pixelant",
+                "email": "tim.ta@pixelant.se",
+                "name": "Tim Ta",
+                "role": "Developer"
+            }
+        ],
+        "plugins": [],
+        "vendorName": "Pixelant"
+    },
+    "wires": [],
+    "log": {
+        "last_modified": "2017-06-02 06:48",
+        "extension_builder_version": "8.6.0",
+        "be_user": " (1)"
+    }
+}

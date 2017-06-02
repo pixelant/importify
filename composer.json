@@ -1,18 +1,20 @@
 {
-  "name": "pixelant/importify",
-  "description": "A generic importer for TYPO3",
-  "type": "typo3-cms-extension",
-  "license": "GPL-2.0+",
-  "autoload": {
-    "psr-4": {
-      "Pixelant\\Importify\\": "Classes/"
+    "name": "pixelant/importify",
+    "type": "typo3-cms-extension",
+    "description": "Importer for TYPO3",
+    "author": [
+        {
+            "name": "Tim Ta",
+            "role": "Developer",
+            "company": "Pixelant"
+        }
+    ],
+    "require": {
+        "typo3/cms-core": "^8.6.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Pixelant\\Importify\\": "Classes"
+        }
     }
-  },
-  "replace": {
-    "importify": "self.version",
-    "typo3-ter/importify": "self.version"
-  },
-  "require": {
-    "typo3/cms": "^8.7.0"
-  }
 }

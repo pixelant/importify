@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<xliff version="1.0">
+	<file source-language="en" datatype="plaintext" original="messages" date="2017-06-02T06:48:47Z" product-name="importify">
+		<header/>
+		<body>
+			<trans-unit id="tx_importify_domain_model_import">
+				<source>Import</source>
+			</trans-unit>
+		</body>
+	</file>
+</xliff>
