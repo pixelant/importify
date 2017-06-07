@@ -12,10 +12,12 @@
                 "actionGroup": {
                     "_default0_list": true,
                     "_default1_show": true,
-                    "_default2_new_create": false,
-                    "_default3_edit_update": false,
-                    "_default4_delete": false,
-                    "customActions": []
+                    "_default2_new_create": true,
+                    "_default3_edit_update": true,
+                    "_default4_delete": true,
+                    "customActions": [
+                        "upload"
+                    ]
                 },
                 "name": "Import",
                 "objectsettings": {
@@ -32,7 +34,28 @@
                     "uid": "326150650129"
                 },
                 "propertyGroup": {
-                    "properties": []
+                    "properties": [
+                        {
+                            "allowedFileTypes": "",
+                            "maxItems": "1",
+                            "propertyDescription": "",
+                            "propertyIsExcludeField": true,
+                            "propertyIsRequired": false,
+                            "propertyName": "file",
+                            "propertyType": "File",
+                            "uid": "819586893784"
+                        },
+                        {
+                            "allowedFileTypes": "",
+                            "maxItems": "1",
+                            "propertyDescription": "",
+                            "propertyIsExcludeField": true,
+                            "propertyIsRequired": false,
+                            "propertyName": "filename",
+                            "propertyType": "String",
+                            "uid": "557706469573"
+                        }
+                    ]
                 },
                 "relationGroup": {
                     "relations": []
@@ -68,7 +91,7 @@
         },
         "extensionKey": "importify",
         "name": "Importify",
-        "originalExtensionKey": "importtypo3",
+        "originalExtensionKey": "importify",
         "originalVendorName": "Pixelant",
         "persons": [
             {
@@ -83,7 +106,7 @@
     },
     "wires": [],
     "log": {
-        "last_modified": "2017-06-02 06:48",
+        "last_modified": "2017-06-02 01:54",
         "extension_builder_version": "8.6.0",
         "be_user": " (1)"
     }

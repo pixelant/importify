@@ -27,8 +27,51 @@ class ImportTest extends \TYPO3\CMS\Core\Tests\UnitTestCase
     /**
      * @test
      */
-    public function dummyTestToNotLeaveThisFileEmpty()
+    public function getFileReturnsInitialValueForFileReference()
     {
-        self::markTestIncomplete();
+        self::assertEquals(
+            null,
+            $this->subject->getFile()
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function setFileForFileReferenceSetsFile()
+    {
+        $fileReferenceFixture = new \TYPO3\CMS\Extbase\Domain\Model\FileReference();
+        $this->subject->setFile($fileReferenceFixture);
+
+        self::assertAttributeEquals(
+            $fileReferenceFixture,
+            'file',
+            $this->subject
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function getFilenameReturnsInitialValueForString()
+    {
+        self::assertSame(
+            '',
+            $this->subject->getFilename()
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function setFilenameForStringSetsFilename()
+    {
+        $this->subject->setFilename('Conceived at T3CON10');
+
+        self::assertAttributeEquals(
+            'Conceived at T3CON10',
+            'filename',
+            $this->subject
+        );
     }
 }

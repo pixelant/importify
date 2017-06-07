@@ -1,0 +1,12 @@
+{namespace h=Pixelant\Importify\ViewHelpers}
+
+<label for="file">
+	<f:translate key="tx_importify_domain_model_import.file" />
+</label><br />
+    <h:form.upload property="file" >
+    </h:form.upload><br />
+
+<label for="filename">
+	<f:translate key="tx_importify_domain_model_import.filename" />
+</label><br />
+	<f:form.textfield property="filename" id="filename"/><br />

@@ -64,4 +64,72 @@ class ImportControllerTest extends \TYPO3\CMS\Core\Tests\UnitTestCase
 
         $this->subject->showAction($import);
     }
+
+    /**
+     * @test
+     */
+    public function createActionAddsTheGivenImportToImportRepository()
+    {
+        $import = new \Pixelant\Importify\Domain\Model\Import();
+
+        $importRepository = $this->getMockBuilder(\Pixelant\Importify\Domain\Repository\ImportRepository::class)
+            ->setMethods(['add'])
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $importRepository->expects(self::once())->method('add')->with($import);
+        $this->inject($this->subject, 'importRepository', $importRepository);
+
+        $this->subject->createAction($import);
+    }
+
+    /**
+     * @test
+     */
+    public function editActionAssignsTheGivenImportToView()
+    {
+        $import = new \Pixelant\Importify\Domain\Model\Import();
+
+        $view = $this->getMockBuilder(\TYPO3\CMS\Extbase\Mvc\View\ViewInterface::class)->getMock();
+        $this->inject($this->subject, 'view', $view);
+        $view->expects(self::once())->method('assign')->with('import', $import);
+
+        $this->subject->editAction($import);
+    }
+
+    /**
+     * @test
+     */
+    public function updateActionUpdatesTheGivenImportInImportRepository()
+    {
+        $import = new \Pixelant\Importify\Domain\Model\Import();
+
+        $importRepository = $this->getMockBuilder(\Pixelant\Importify\Domain\Repository\ImportRepository::class)
+            ->setMethods(['update'])
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $importRepository->expects(self::once())->method('update')->with($import);
+        $this->inject($this->subject, 'importRepository', $importRepository);
+
+        $this->subject->updateAction($import);
+    }
+
+    /**
+     * @test
+     */
+    public function deleteActionRemovesTheGivenImportFromImportRepository()
+    {
+        $import = new \Pixelant\Importify\Domain\Model\Import();
+
+        $importRepository = $this->getMockBuilder(\Pixelant\Importify\Domain\Repository\ImportRepository::class)
+            ->setMethods(['remove'])
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $importRepository->expects(self::once())->method('remove')->with($import);
+        $this->inject($this->subject, 'importRepository', $importRepository);
+
+        $this->subject->deleteAction($import);
+    }
 }
