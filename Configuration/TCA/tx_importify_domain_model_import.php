@@ -119,7 +119,7 @@ return [
                     'tablenames' => 'tx_importify_domain_model_import',
                     'table_local' => 'sys_file',
                 ],
-            ],
+            ]),
         ],
     ],
 ];
