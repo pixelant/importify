@@ -20,7 +20,6 @@ Otherwise your changes will be overwritten the next time you save the extension 
 <table  class="tx_importify" >
 	<tr>
 		<th><f:translate key="tx_importify_domain_model_import.file" /></th>
-		<th><f:translate key="tx_importify_domain_model_import.filename" /></th>
 		<th> </th>
 		<th> </th>
 	</tr>
@@ -28,7 +27,6 @@ Otherwise your changes will be overwritten the next time you save the extension 
 	<f:for each="{imports}" as="import">
 		<tr>
 			<td><f:link.action action="show" arguments="{import : import}"> {import.file.originalResource.name}</f:link.action></td>
-			<td><f:link.action action="show" arguments="{import : import}"> {import.filename}</f:link.action></td>
 			<td><f:link.action action="edit" arguments="{import : import}">Edit</f:link.action></td>
 			<td><f:link.action action="delete" arguments="{import : import}">Delete</f:link.action></td>
 		</tr>

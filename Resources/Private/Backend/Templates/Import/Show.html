@@ -16,7 +16,74 @@ Otherwise your changes will be overwritten the next time you save the extension 
 <h1>Single View for Import</h1>
 
 <f:flashMessages />
-<f:render partial="Import/Properties" arguments="{import:import}" />
+<h2><f:render partial="Import/Properties" arguments="{import:import}" /></h2>
 <f:link.action action="list">Back to list</f:link.action><br />
-<f:link.action action="create">New Import</f:link.action>
+<h2>Preview</h2>
+<table>
+    <thead>
+       <tr>
+         <f:for each="{csvHeader}" as="header">
+             <th>{header}</th>
+         </f:for>
+       </tr>
+     </thead>
+     <tbody>
+    <f:for each="{csvArray}" as="csvData" iteration="i">
+    <tr>
+      <f:for each="{csvData}" as="fields">
+          <td>{fields}</td>
+      </f:for>
+    </tr>
+    </f:for>
+    </tbody>
+</table>
+
+<h2>Import</h2>
+<table id="mapping">
+    <thead>
+       <tr>
+         <th>
+            <f:render partial="Import/Properties" arguments="{import:import}" />
+         </th>
+          <th>
+            <strong>Table</strong>
+            <f:form.select id="table" name="table" 
+                options="{allowedTables}"
+            />
+         </th>
+       </tr>
+     </thead>
+     <tbody>
+        <f:for each="{csvHeader}" as="header"> 
+            <tr>
+                <td>{header}</td>
+                <td>
+                    <f:form.select class="column" name="column"/>
+                </td>
+            </tr>
+        </f:for>
+    </tbody>
+</table>
+
+<script>
+    $('#table').change(function(){
+        var selected = $('#table option:selected').text();
+        $('#mapping > tbody').fadeTo(1000, 0.5);
+        $.ajax({
+            url: TYPO3.settings.ajaxUrls['unique_identifier'],
+            method: 'POST',
+            dataType: 'json',
+            data: {table: $('#table option:selected').text()},
+
+            success: function(res) {
+                $('.column').html('html');
+                res.forEach(function(value) {
+                    $('.column').append($('<option>', { value: value, text: value }))
+                });
+                $('#mapping > tbody').fadeTo(1000, 1);
+            }
+        });
+    });
+</script>
+<f:form.button>IMPORT!!!</f:form.button>
 </f:section>

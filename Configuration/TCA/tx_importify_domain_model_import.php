@@ -16,14 +16,14 @@ return [
             'starttime' => 'starttime',
             'endtime' => 'endtime',
         ],
-        'searchFields' => 'file,filename',
+        'searchFields' => 'file,delimeter,enclosure',
         'iconfile' => 'EXT:importify/Resources/Public/Icons/tx_importify_domain_model_import.gif'
     ],
     'interface' => [
-        'showRecordFieldList' => 'sys_language_uid, l10n_parent, l10n_diffsource, hidden, file, filename',
+        'showRecordFieldList' => 'sys_language_uid, l10n_parent, l10n_diffsource, hidden, file, delimeter, enclosure',
     ],
     'types' => [
-        '1' => ['showitem' => 'sys_language_uid, l10n_parent, l10n_diffsource, hidden, file, filename, --div--;LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:tabs.access, starttime, endtime'],
+        '1' => ['showitem' => 'sys_language_uid, l10n_parent, l10n_diffsource, hidden, file, delimeter, enclosure, --div--;LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:tabs.access, starttime, endtime'],
     ],
     'columns' => [
         'sys_language_uid' => [
@@ -107,19 +107,76 @@ return [
                 ],
             ],
         ],
+
         'file' => [
-            'exclude' => true,
-            'label' => 'LLL:EXT:lang/locallang_general.xlf:LGL.file',
-            'config' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::getFileFieldTCAConfig('file', [
-                'maxitems' => 1,
-                // custom configuration for displaying fields in the overlay/reference table
-                // to use the imageoverlayPalette instead of the basicoverlayPalette
-                'foreign_match_fields' => [
-                    'fieldname' => 'file',
-                    'tablenames' => 'tx_importify_domain_model_import',
-                    'table_local' => 'sys_file',
-                ],
-            ]),
+            'exclude' => false,
+            'label' => 'LLL:EXT:importify/Resources/Private/Language/locallang_db.xlf:tx_importify_domain_model_import.file',
+            'config' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::getFileFieldTCAConfig(
+                'file',
+                [
+                    'appearance' => [
+                        'createNewRelationLinkTitle' => 'LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:media.addFileReference'
+                    ],
+                    'foreign_match_fields' => [
+                        'fieldname' => 'file',
+                        'tablenames' => 'tx_importify_domain_model_import',
+                        'table_local' => 'sys_file',
+                    ],
+                    'foreign_types' => [
+                        '0' => [
+                            'showitem' => '
+                            --palette--;LLL:EXT:lang/locallang_tca.xlf:sys_file_reference.imageoverlayPalette;imageoverlayPalette,
+                            --palette--;;filePalette'
+                        ],
+                        \TYPO3\CMS\Core\Resource\File::FILETYPE_TEXT => [
+                            'showitem' => '
+                            --palette--;LLL:EXT:lang/locallang_tca.xlf:sys_file_reference.imageoverlayPalette;imageoverlayPalette,
+                            --palette--;;filePalette'
+                        ],
+                        \TYPO3\CMS\Core\Resource\File::FILETYPE_IMAGE => [
+                            'showitem' => '
+                            --palette--;LLL:EXT:lang/locallang_tca.xlf:sys_file_reference.imageoverlayPalette;imageoverlayPalette,
+                            --palette--;;filePalette'
+                        ],
+                        \TYPO3\CMS\Core\Resource\File::FILETYPE_AUDIO => [
+                            'showitem' => '
+                            --palette--;LLL:EXT:lang/locallang_tca.xlf:sys_file_reference.imageoverlayPalette;imageoverlayPalette,
+                            --palette--;;filePalette'
+                        ],
+                        \TYPO3\CMS\Core\Resource\File::FILETYPE_VIDEO => [
+                            'showitem' => '
+                            --palette--;LLL:EXT:lang/locallang_tca.xlf:sys_file_reference.imageoverlayPalette;imageoverlayPalette,
+                            --palette--;;filePalette'
+                        ],
+                        \TYPO3\CMS\Core\Resource\File::FILETYPE_APPLICATION => [
+                            'showitem' => '
+                            --palette--;LLL:EXT:lang/locallang_tca.xlf:sys_file_reference.imageoverlayPalette;imageoverlayPalette,
+                            --palette--;;filePalette'
+                        ]
+                    ],
+                    'maxitems' => 1,
+                    'minitems' => 1
+                ]
+            ),
         ],
+        'delimeter' => [
+            'exclude' => false,
+            'label' => 'LLL:EXT:importify/Resources/Private/Language/locallang_db.xlf:tx_importify_domain_model_import.delimeter',
+            'config' => [
+                'type' => 'input',
+                'size' => 30,
+                'eval' => 'trim,required'
+            ],
+        ],
+        'enclosure' => [
+            'exclude' => false,
+            'label' => 'LLL:EXT:importify/Resources/Private/Language/locallang_db.xlf:tx_importify_domain_model_import.enclosure',
+            'config' => [
+                'type' => 'input',
+                'size' => 30,
+                'eval' => 'trim,required'
+            ],
+        ],
+    
     ],
 ];
