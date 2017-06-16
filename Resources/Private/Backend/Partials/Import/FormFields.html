@@ -7,8 +7,20 @@
 <label for="delimeter">
 	<f:translate key="tx_importify_domain_model_import.delimeter" /> <span class="required">(required)</span>
 </label><br />
-	<f:form.textfield property="delimeter" /><br />
+<f:form.select property="delimeter"
+    options="{
+        ';': 'Semi-colon (;)',
+        ',': 'Comma (,)'
+    }"
+    value=","
+/><br />
 <label for="enclosure">
 	<f:translate key="tx_importify_domain_model_import.enclosure" /> <span class="required">(required)</span>
 </label><br />
-	<f:form.textfield property="enclosure" /><br />
+<f:form.select property="enclosure"
+    options="{
+        '\"': 'Citation (\")',
+        ' ': 'Space ( )'
+    }"
+    value="\""
+/><br />

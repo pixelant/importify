@@ -5,8 +5,8 @@ return [
         'path' => '/unique/identifier',
         'target' => \Pixelant\Importify\Controller\ImportController::class . '::getTableContentAction'
     ],
-    'parse_file' => [
-        'path' => '/parse/file',
-        'target' => \Pixelant\Importify\Controller\ImportController::class . '::parseFile'
+    'import_file' => [
+        'path' => '/import/file',
+        'target' => \Pixelant\Importify\Controller\ImportController::class . '::importFileAction'
     ]
 ];

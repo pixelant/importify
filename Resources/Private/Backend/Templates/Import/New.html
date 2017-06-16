@@ -21,23 +21,6 @@ Otherwise your changes will be overwritten the next time you save the extension 
 
 <f:form action="create"  enctype="multipart/form-data"  name="newImport" object="{newImport}">
 <f:render partial="Import/FormFields" />
-
-<strong>Delimeter:</strong>
-<f:form.select name="Delimeter" 
-    options="{
-        ';': 'Semi-colon (;)',
-        ',': 'Comma (,)'
-    }"
-    value=","
-/>
-<strong>Enclosure:</strong>
-<f:form.select name="Enclosure" 
-    options="{
-        '\"': 'Citation (\")',
-        ' ': 'Space ( )'
-    }"
-    value="\""
-/>
 <f:form.submit value="Create new" />
 </f:form>
 </f:section>

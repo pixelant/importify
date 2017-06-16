@@ -5,6 +5,10 @@ use Pixelant\Importify\Property\TypeConverter\UploadedFileReferenceConverter;
 use TYPO3\CMS\Extbase\Property\PropertyMappingConfiguration;
 use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+
+use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Database\Query\QueryBuilder;
+
 /***
  *
  * This file is part of the "Import" Extension for TYPO3 CMS.
@@ -66,17 +70,24 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
     public function showAction(\Pixelant\Importify\Domain\Model\Import $import)
     {
         $this->view->assign('import', $import);
+        $column_names = array_keys($GLOBALS['TCA']['fe_users']['columns']);
+
+        sort($column_names, SORT_NATURAL | SORT_FLAG_CASE);
+        $this->view->assign('fe_users_columns', $column_names);
         $file = $import->getFile()->getOriginalResource()->getOriginalFile();
         $content = $file->getContents();
         $delimeter = ',';
         //, ;
-        $fieldEnclosure = ' ';
+        $fieldEnclosure = '"';
         // "
         $csvArray = \TYPO3\CMS\Core\Utility\CsvUtility::csvToArray($content, $delimeter, $fieldEnclosure);
+        //DebuggerUtility::var_dump($csvArray, 'csvArray');exit;
         $allowedTables = GeneralUtility::trimExplode(',', $this->settings['allowedTables']);
         //DebuggerUtility::var_dump($csvArray, 'csvArray (innan shift)');
         //$csvHeader = $csvArray[0];
         $csvHeader = array_shift($csvArray);
+
+        sort($csvHeader, SORT_NATURAL | SORT_FLAG_CASE);
         //DebuggerUtility::var_dump($csvHeader, 'csvHeader');
         //DebuggerUtility::var_dump($csvArray, 'csvArray(efter shift)');exit;
         $this->view->assign('allowedTables', $allowedTables);
@@ -197,6 +208,8 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
     {
         $data = $request->getParsedBody();
         $column_names = array_keys($GLOBALS['TCA'][$data['table']]['columns']);
+        
+        sort($column_names, SORT_NATURAL | SORT_FLAG_CASE);
         $json = json_encode($column_names);
         $response->getBody()->write($json);
         return $response;
@@ -206,16 +219,23 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
      * @param \Psr\Http\Message\ServerRequestInterface $request
      * @param \Psr\Http\Message\ResponseInterface $response
      */
-    public function parseFileAction(
+    public function importFileAction(
         \Psr\Http\Message\ServerRequestInterface $request,
         \Psr\Http\Message\ResponseInterface $response)
     {
         $data = $request->getParsedBody();
-        $delimeter = $data['delimeter'];
-        $enclosure = $data['enclosure'];
-        $column_names = array_keys($GLOBALS['TCA'][$data['table']]['columns']);
-        $json = json_encode($column_names);
-        $response->getBody()->write($json);
+        $importData = $data['importData'];
+        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('fe_users');
+        $queryBuilder->insert('fe_users');
+        echo '<pre>';
+        print_r($importData);
+        echo '</pre>';
+        
+        foreach ($importData as $data) {
+            $queryBuilder->values($data)->execute();
+        }
+
+        $response->getBody()->write(json_encode(['success' => 1]));
         return $response;
     }
 
