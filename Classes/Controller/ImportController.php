@@ -71,25 +71,14 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
     {
         $this->view->assign('import', $import);
         $column_names = array_keys($GLOBALS['TCA']['fe_users']['columns']);
-
-        sort($column_names, SORT_NATURAL | SORT_FLAG_CASE);
         $this->view->assign('fe_users_columns', $column_names);
         $file = $import->getFile()->getOriginalResource()->getOriginalFile();
         $content = $file->getContents();
-        $delimeter = ',';
-        //, ;
-        $fieldEnclosure = '"';
-        // "
+        $delimeter = $import->getDelimeter();
+        $fieldEnclosure = $import->getEnclosure();
         $csvArray = \TYPO3\CMS\Core\Utility\CsvUtility::csvToArray($content, $delimeter, $fieldEnclosure);
-        //DebuggerUtility::var_dump($csvArray, 'csvArray');exit;
         $allowedTables = GeneralUtility::trimExplode(',', $this->settings['allowedTables']);
-        //DebuggerUtility::var_dump($csvArray, 'csvArray (innan shift)');
-        //$csvHeader = $csvArray[0];
         $csvHeader = array_shift($csvArray);
-
-        sort($csvHeader, SORT_NATURAL | SORT_FLAG_CASE);
-        //DebuggerUtility::var_dump($csvHeader, 'csvHeader');
-        //DebuggerUtility::var_dump($csvArray, 'csvArray(efter shift)');exit;
         $this->view->assign('allowedTables', $allowedTables);
         $this->view->assign('csvHeader', $csvHeader);
         $this->view->assign('csvArray', $csvArray);
@@ -103,15 +92,9 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
      */
     public function newAction(\Pixelant\Importify\Domain\Model\Import $newImport = null)
     {
-        if ($file === null || $newImport === null) {
-            $newImport = new \Pixelant\Importify\Domain\Model\Import();
-            $this->view->assign('newImport', $newImport);
-        } else {
-            $file = $newImport->getFile()->getOriginalResource()->getOriginalFile();
-            $fileContent = $file->getContents();
-            $this->view->assign('fileContent', $fileContent);
-            $this->view->assign('newImport', $newImport);
-        }
+        $newImport = new \Pixelant\Importify\Domain\Model\Import();
+        $this->view->assign('newImport', $newImport);
+
     }
 
     /**
@@ -125,15 +108,7 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
         if (is_null($newImport->getFile())) {
             $this->addFlashMessage('File was missing!');
         } else {
-            /*
-                        $file = $import->getFile()->getOriginalResource()->getOriginalFile();
-                        $content = $file->getContents();
-                        $array = $file->toArray();
-
-                        DebuggerUtility::var_dump($array, 'array');exit;*/
-
             $this->importRepository->add($newImport);
-            var_dump($newImport->getUid());
             $persistenceManager = $this->objectManager->get(\TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager::class);
             $persistenceManager->persistAll();
             $this->addFlashMessage('Your new Import was created!');//exit;
@@ -149,15 +124,6 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
      */
     public function uploadAction(string $identifier)
     {
-        $resourceFactory = \TYPO3\CMS\Core\Resource\ResourceFactory::getInstance();
-        $file = $resourceFactory->getFileObjectFromCombinedIdentifier('1:' . $identifier);
-        $content = $file->getContents();
-        $delimeter = ',';
-        //, ;
-        $fieldEnclosure = '"';
-        // "
-        $csvArray = \TYPO3\CMS\Core\Utility\CsvUtility::csvToArray($content, $delimeter, $fieldEnclosure);
-        $this->view->assign('csvArray', $csvArray);
     }
 
     /**
@@ -208,8 +174,7 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
     {
         $data = $request->getParsedBody();
         $column_names = array_keys($GLOBALS['TCA'][$data['table']]['columns']);
-        
-        sort($column_names, SORT_NATURAL | SORT_FLAG_CASE);
+
         $json = json_encode($column_names);
         $response->getBody()->write($json);
         return $response;
@@ -225,18 +190,68 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
     {
         $data = $request->getParsedBody();
         $importData = $data['importData'];
-        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('fe_users');
-        $queryBuilder->insert('fe_users');
+
+        $connePool = GeneralUtility::makeInstance(ConnectionPool::class);
+        $sm = $connePool->getConnectionForTable($data['table'])->getSchemaManager();
+        $columns = $sm->listTableColumns($data['table']);
+
+        $columnsType =[];
+        $dataType =[];
+        foreach ($columns as $column) {
+            $columnsType[$column->getName()] = (string)$column->getType();
+        }
         echo '<pre>';
-        print_r($importData);
-        echo '</pre>';
-        
+        print_r($columnsType);
+        echo  '</pre>';
+        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable($data['table']);$queryBuilder->insert($data['table']);
+        $error = "";
         foreach ($importData as $data) {
+            foreach ($data as $key => $value) {
+                if (!$this->checkDatabaseType($columnsType[$key], $data[$key])){
+                    unset($data[$key]);
+                    $error = " Invalid data for type numeric";
+                }
+            }
+            print_r($data);
             $queryBuilder->values($data)->execute();
         }
-
-        $response->getBody()->write(json_encode(['success' => 1]));
+        $response->getBody()->write(json_encode(['success' => 1],['error' => $error]));
         return $response;
+    }
+
+    public function checkDatabaseType($column, $input){
+        $column=strtoupper($column);
+        // check if column type and input type. is int
+        // or if column type and input type is string
+        if (($column == 'TINYINT' || 
+            $column == 'SMALLINT' || 
+            $column == 'MEDIUMINT' || 
+            $column == 'INT' || 
+            $column == 'BIGINT' || 
+            $column == 'FLOAT' || 
+            $column == 'DOUBLE' || 
+            $column == 'DECIMAL' ||
+            $column == 'INTEGER') &&
+            is_numeric($input)
+        ){
+            return true;
+        } elseif (($column == 'CHAR' || 
+            $column == 'VARCHAR' || 
+            $column == 'TINYTEXT' || 
+            $column == 'BLOB' || 
+            $column == 'MEDIUMTEXT' || 
+            $column == 'MEDIUMBLOB' || 
+            $column == 'LONGTEXT' || 
+            $column == 'LONGBLOB' ||
+            $column == 'ENUM' ||
+            $column == 'TEXT'||
+            $column == 'STRING'||
+            $column == 'SET') &&
+            is_string($input)
+        ){
+            return true;
+        }
+        return false;
     }
 
     /**

@@ -42,7 +42,7 @@ Otherwise your changes will be overwritten the next time you save the extension 
 <table id="mapping">
     <thead>
         <tr>
-          <th>Import from table&emsp;</th>
+          <th>Import from table</th>
           <th>Import to table</th>
        </tr>
        <tr>
@@ -107,29 +107,16 @@ Otherwise your changes will be overwritten the next time you save the extension 
             importData.push(data);
         });
 
-        /*
-        var arrayInputs = [];
-        var arrayColumns = [];
-        var arrayFields = [];
-        for(var i = 0; i<$('.inputs option:selected').length;i++){
-            arrayInputs.push($('.inputs option:selected')[i].text);
-            arrayColumns.push($('.columns option:selected')[i].text);
-        }
-        for(var i = 0; i<$('.inputFields').length;i++){
-            arrayFields.push($('.inputFields')[i].textContent);
-        }
-
-        var data = {};
-        */
-
         $.ajax({
             url: TYPO3.settings.ajaxUrls['import_file'],
             method: 'POST',
             dataType: 'json',
-            data: {importData: importData},
-            success: function(res) {
+            data: {importData: importData,table: $('#table option:selected').text()},
+            success: function(res,error) {
                 console.log('Succeess: ' + res);
-
+                console.log('Error: ' + error);
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
             }
         });
     });
