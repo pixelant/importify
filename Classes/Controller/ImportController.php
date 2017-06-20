@@ -70,8 +70,8 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
     public function showAction(\Pixelant\Importify\Domain\Model\Import $import)
     {
         $this->view->assign('import', $import);
-        $column_names = array_keys($GLOBALS['TCA']['fe_users']['columns']);
-        $this->view->assign('fe_users_columns', $column_names);
+        $fe_users_columns = array_keys($GLOBALS['TCA']['fe_users']['columns']);
+        $this->view->assign('fe_users_columns', $fe_users_columns);
         $file = $import->getFile()->getOriginalResource()->getOriginalFile();
         $content = $file->getContents();
         $delimeter = $import->getDelimeter();
@@ -195,63 +195,87 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
         $sm = $connePool->getConnectionForTable($data['table'])->getSchemaManager();
         $columns = $sm->listTableColumns($data['table']);
 
-        $columnsType =[];
-        $dataType =[];
-        foreach ($columns as $column) {
-            $columnsType[$column->getName()] = (string)$column->getType();
-        }
-        echo '<pre>';
-        print_r($columnsType);
-        echo  '</pre>';
         $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable($data['table']);$queryBuilder->insert($data['table']);
-        $error = "";
+        $error = null;
         foreach ($importData as $data) {
+            var_dump($data);
             foreach ($data as $key => $value) {
-                if (!$this->checkDatabaseType($columnsType[$key], $data[$key])){
+                $key = strtolower($key);
+                $value = str_replace('−','-',$value);
+                $error = $this->validateInput($columns[$key], $value,$key);
+                if ($error){
                     unset($data[$key]);
-                    $error = " Invalid data for type numeric";
                 }
             }
-            print_r($data);
             $queryBuilder->values($data)->execute();
         }
         $response->getBody()->write(json_encode(['success' => 1],['error' => $error]));
         return $response;
     }
 
-    public function checkDatabaseType($column, $input){
-        $column=strtoupper($column);
+    public function validateInput($column, $input, $columnName){
+        var_dump($input);
+        $error = [];
+        $res = $this->validateInputTypeAndUnsigned((string)$column->getType(),$column->getUnsigned(),$input);
+        if (!$res['type']){
+            $error['type'] = "Invalid data for type numeric for column \'" . $columnName."\'";
+        } elseif (!$res['unsigned'] && $res['unsigned'] !==null){
+            $error['unsigned'] = "Not Unsigned column \'" .$columnName."\'";
+        } elseif (!$this->validateInputNotNull($column->getNotNull(),$input)){
+            $error['null'] = "Null column not allowed \'" .$columnName;
+        } elseif (!$this->validateInputLenght($column->getLength(),$input)){
+            $error['length'] = "Data too long for column \'" .$columnName."\'";
+        }
+        print_r($error);
+        return $error;
+    }
+    public function validateInputLenght($length, $input){
+        return $length >= strlen($input);
+    }
+    public function validateInputUnsigned($unsigned, $input){
+        return $unsigned && ctype_digit($input);
+    }
+    public function validateInputNotNull($notnull, $input){
+        return $notnull && isset($input);
+    }
+    public function validateInputTypeAndUnsigned($type,$unsigned, $input){
+        $res['unsigned'] = null;
+        $res['type'] = false;
+        $type=strtoupper($type);
         // check if column type and input type. is int
         // or if column type and input type is string
-        if (($column == 'TINYINT' || 
-            $column == 'SMALLINT' || 
-            $column == 'MEDIUMINT' || 
-            $column == 'INT' || 
-            $column == 'BIGINT' || 
-            $column == 'FLOAT' || 
-            $column == 'DOUBLE' || 
-            $column == 'DECIMAL' ||
-            $column == 'INTEGER') &&
-            is_numeric($input)
+        if (($type == 'TINYINT' ||
+            $type == 'SMALLINT' ||
+            $type == 'MEDIUMINT' ||
+            $type == 'INT' ||
+            $type == 'BIGINT' ||
+            $type == 'FLOAT' ||
+            $type == 'DOUBLE' ||
+            $type == 'DECIMAL' ||
+            $type == 'INTEGER') &&
+            is_numeric(floor($input))
         ){
-            return true;
-        } elseif (($column == 'CHAR' || 
-            $column == 'VARCHAR' || 
-            $column == 'TINYTEXT' || 
-            $column == 'BLOB' || 
-            $column == 'MEDIUMTEXT' || 
-            $column == 'MEDIUMBLOB' || 
-            $column == 'LONGTEXT' || 
-            $column == 'LONGBLOB' ||
-            $column == 'ENUM' ||
-            $column == 'TEXT'||
-            $column == 'STRING'||
-            $column == 'SET') &&
+            $res['type'] = true;
+            $res['unsigned']=$this->validateInputUnsigned($unsigned,$input);
+            return $res;
+        } elseif (($type == 'CHAR' ||
+            $type == 'VARCHAR' ||
+            $type == 'TINYTEXT' ||
+            $type == 'BLOB' ||
+            $type == 'MEDIUMTEXT' ||
+            $type == 'MEDIUMBLOB' ||
+            $type == 'LONGTEXT' ||
+            $type == 'LONGBLOB' ||
+            $type == 'ENUM' ||
+            $type == 'TEXT'||
+            $type == 'STRING'||
+            $type == 'SET') &&
             is_string($input)
         ){
-            return true;
+            $res['type'] = true;
+            return $res;
         }
-        return false;
+        return $res;
     }
 
     /**
