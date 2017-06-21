@@ -25,6 +25,32 @@ use TYPO3\CMS\Core\Database\Query\QueryBuilder;
  */
 class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
 {
+            const MAX_TINYINT_UNSIGNED = 255;
+            const MAX_SMALLINT_UNSIGNED = 65535;
+            const MAX_MEDIUMINT_UNSIGNED = 16777215;
+            const MAX_INT_UNSIGNED = 4294967295;
+            const MAX_BIGINT_UNSIGNED = 18446744073709551615;
+            const MAX_DECIMAL_UNSIGNED = 2*10**38;
+            const MIN_UNSIGNED = 0;
+
+            const MAX_TINYINT_SIGNED = 127;
+            const MAX_SMALLINT_SIGNED = 32767;
+            const MAX_MEDIUMINT_SIGNED = 8388607;
+            const MAX_INT_SIGNED = 2147483647;
+            const MAX_BIGINT_SIGNED = 9223372036854775807;
+            const MAX_FLOAT_SIGNED = 3.402823466E+38;
+            const MAX_DOUBLE_SIGNED = 1.79E+308;
+            const MAX_DECIMAL_SIGNED = 10**38-1;
+
+            const MIN_TINYINT_SIGNED = -128;
+            const MIN_SMALLINT_SIGNED = -32768;
+            const MIN_MEDIUMINT_SIGNED = -8388608;
+            const MIN_INT_SIGNED = -2147483648;
+            const MIN_BIGINT_SIGNED = -9223372036854775808;
+            const MIN_FLOAT_SIGNED = -3.402823466E+38;
+            const MIN_DOUBLE_SIGNED = -1.79E+308;
+            const MIN_DECIMAL_SIGNED = -10**38+1;
+
     /**
      * importRepository
      *
@@ -111,7 +137,7 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
             $this->importRepository->add($newImport);
             $persistenceManager = $this->objectManager->get(\TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager::class);
             $persistenceManager->persistAll();
-            $this->addFlashMessage('Your new Import was created!');//exit;
+            $this->addFlashMessage('Your new Import was created!');
             $this->redirect('show', 'Import', 'Importify', ['import' => $newImport]);
         }
     }
@@ -194,71 +220,47 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
         $connePool = GeneralUtility::makeInstance(ConnectionPool::class);
         $sm = $connePool->getConnectionForTable($data['table'])->getSchemaManager();
         $columns = $sm->listTableColumns($data['table']);
-
-        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable($data['table']);$queryBuilder->insert($data['table']);
+        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable($data['table']);
+        $queryBuilder->insert($data['table']);
         $error = null;
         foreach ($importData as $data) {
-            var_dump($data);
             foreach ($data as $key => $value) {
                 $key = strtolower($key);
                 $value = str_replace('−','-',$value);
-                $error = $this->validateInput($columns[$key], $value,$key);
-                if ($error){
+                $invalid = $this->invalidInput($columns[$key], $value,$key);
+                if (!empty($invalid)) {
+                    $error[] = $invalid;
                     unset($data[$key]);
                 }
             }
             $queryBuilder->values($data)->execute();
         }
-        $response->getBody()->write(json_encode(['success' => 1],['error' => $error]));
+        $response->getBody()->write(json_encode(['error' => $error]));
         return $response;
     }
 
-    public function validateInput($column, $input, $columnName){
-        var_dump($input);
+    public function invalidInput($column, $input, $columnName){
         $error = [];
-        $res = $this->validateInputTypeAndUnsigned((string)$column->getType(),$column->getUnsigned(),$input);
-        if (!$res['type']){
-            $error['type'] = "Invalid data for type numeric for column \'" . $columnName."\'";
-        } elseif (!$res['unsigned'] && $res['unsigned'] !==null){
-            $error['unsigned'] = "Not Unsigned column \'" .$columnName."\'";
-        } elseif (!$this->validateInputNotNull($column->getNotNull(),$input)){
-            $error['null'] = "Null column not allowed \'" .$columnName;
-        } elseif (!$this->validateInputLenght($column->getLength(),$input)){
-            $error['length'] = "Data too long for column \'" .$columnName."\'";
+        $typeIsString=$this->isDatabaseTypeString($column->getType());
+        $typeIsInt=$this->isDatabaseTypeInt($column->getType());
+        $dbStructureIsUnsigned=$column->getUnsigned();
+        $inputIsNumber=is_numeric(floor($input));
+        $inputIsString=is_string($input);
+        $inputIsUnsigned=ctype_digit($input);
+
+        if (!($typeIsString && $inputIsString || $typeIsInt && $inputIsNumber)) {
+            $error[]= "Invalid data \'".$input."\' for type numeric for column \'" . $columnName."\'";
+        } elseif ($typeIsInt && $dbStructureIsUnsigned && !$inputIsUnsigned) {
+            $error[] = "Data \'".$input."\', Not Unsigned column \'" .$columnName."\'";
+        } elseif ($this->invalidInputLenght($column->getType(), $dbStructureIsUnsigned, $column->getLength(), $input)) {
+            $error[] = "Data \'".$input."\' too long for column \'" .$columnName."\' length: " . $column->getLength().', input length: '.strlen($input);
         }
-        print_r($error);
         return $error;
     }
-    public function validateInputLenght($length, $input){
-        return $length >= strlen($input);
-    }
-    public function validateInputUnsigned($unsigned, $input){
-        return $unsigned && ctype_digit($input);
-    }
-    public function validateInputNotNull($notnull, $input){
-        return $notnull && isset($input);
-    }
-    public function validateInputTypeAndUnsigned($type,$unsigned, $input){
-        $res['unsigned'] = null;
-        $res['type'] = false;
-        $type=strtoupper($type);
-        // check if column type and input type. is int
-        // or if column type and input type is string
-        if (($type == 'TINYINT' ||
-            $type == 'SMALLINT' ||
-            $type == 'MEDIUMINT' ||
-            $type == 'INT' ||
-            $type == 'BIGINT' ||
-            $type == 'FLOAT' ||
-            $type == 'DOUBLE' ||
-            $type == 'DECIMAL' ||
-            $type == 'INTEGER') &&
-            is_numeric(floor($input))
-        ){
-            $res['type'] = true;
-            $res['unsigned']=$this->validateInputUnsigned($unsigned,$input);
-            return $res;
-        } elseif (($type == 'CHAR' ||
+
+    protected function isDatabaseTypeString($type) {
+        $type = strtoupper($type);
+        return $type == 'CHAR' ||
             $type == 'VARCHAR' ||
             $type == 'TINYTEXT' ||
             $type == 'BLOB' ||
@@ -269,13 +271,73 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
             $type == 'ENUM' ||
             $type == 'TEXT'||
             $type == 'STRING'||
-            $type == 'SET') &&
-            is_string($input)
-        ){
-            $res['type'] = true;
-            return $res;
+            $type == 'SET';
+    }
+
+    protected function isDatabaseTypeInt($type) {
+        $type = strtoupper($type);
+        return $type == 'TINYINT' ||
+            $type == 'SMALLINT' ||
+            $type == 'MEDIUMINT' ||
+            $type == 'INT' ||
+            $type == 'INTEGER' ||
+            $type == 'BIGINT' ||
+            $type == 'FLOAT' ||
+            $type == 'DOUBLE' ||
+            $type == 'DECIMAL';
+    }
+
+    public function invalidInputLenght($type, $databaseIsUnsigned, $length, $input){
+        $typeIsString=$this->isDatabaseTypeString($type);
+        $typeIsInt=$this->isDatabaseTypeInt($type);
+        $inputIsUnsigned=ctype_digit($input);
+
+        if($typeIsString){
+            return $length < strlen($input);
+        } elseif($typeIsInt){
+            $type = strtoupper($type);
+            if ($inputIsUnsigned && $databaseIsUnsigned) {
+                switch ($type) {
+                    case "TINYINT":
+                        return self::MAX_TINYINT_UNSIGNED<$input;
+                    case "SMALLINT":
+                        return self::MAX_SMALLINT_UNSIGNED<$input;
+                    case "MEDIUMINT":
+                        return self::MAX_SMALLINT_UNSIGNED<$input;
+                    case "INT":
+                    case "INTEGER":
+                        return self::MAX_INT_UNSIGNED<$input;
+                    case "BIGINT":
+                        return self::MAX_BIGINT_UNSIGNED<$input;
+                    case "DECIMAL":
+                        return self::MAX_DECIMAL_UNSIGNED<$input;
+                    default:
+                        echo "UNSIGNED DEFAULT ERROR!!";
+                }
+            } else {
+                switch ($type) {
+                    case "TINYINT":
+                        return self::MAX_TINYINT_SIGNED<$input || self::MIN_TINYINT_SIGNED>$input;
+                    case "SMALLINT":
+                        return self::MAX_SMALLINT_SIGNED<$input || self::MIN_SMALLINT_SIGNED>$input;
+                    case "MEDIUMINT":
+                        return self::MAX_SMALLINT_SIGNED<$input || self::MIN_SMALLINT_SIGNED>$input;
+                    case "INT":
+                    case "INTEGER":
+                        return self::MAX_INT_SIGNED<$input || self::MIN_INT_SIGNED>$input;
+                    case "BIGINT":
+                        return self::MAX_BIGINT_SIGNED<$input || self::MIN_BIGINT_SIGNED>$input;
+                    case "FLOAT":
+                        return self::MAX_FLOAT_SIGNED<$input || self::MIN_FLOAT_SIGNED>$input;
+                    case "DOUBLE":
+                        return self::MAX_DOUBLE_SIGNED<$input || self::MIN_DOUBLE_SIGNED>$input;
+                    case "DECIMAL":
+                        return self::MAX_DECIMAL_SIGNED<$input || self::MIN_DECIMAL_SIGNED>$input;
+                    default:
+                        echo "SIGNED ERROR DEFAULT!!";
+                }
+            }
         }
-        return $res;
     }
 
     /**

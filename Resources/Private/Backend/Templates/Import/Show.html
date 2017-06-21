@@ -112,11 +112,12 @@ Otherwise your changes will be overwritten the next time you save the extension 
             method: 'POST',
             dataType: 'json',
             data: {importData: importData,table: $('#table option:selected').text()},
-            success: function(res,error) {
-                console.log('Succeess: ' + res);
-                console.log('Error: ' + error);
+            success: function(res) {
+                console.log(res);
             },
             error: function (xhr, ajaxOptions, thrownError) {
+                var err = eval("(" + xhr.responseText + ")");
+                console.log(err.Message);
             }
         });
     });
