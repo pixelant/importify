@@ -29,6 +29,12 @@ call_user_func(
         \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addLLrefForTCAdescr('tx_importify_domain_model_import', 'EXT:importify/Resources/Private/Language/locallang_csh_tx_importify_domain_model_import.xlf');
         \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::allowTableOnStandardPages('tx_importify_domain_model_import');
 
+    }
+);
+## EXTENSION BUILDER DEFAULTS END TOKEN - Everything BEFORE this line is overwritten with the defaults of the extension builder
+call_user_func(
+    function()
+    {
         \TYPO3\CMS\Extbase\Utility\ExtensionUtility::registerTypeConverter('Pixelant\\Importify\\Property\\TypeConverter\\UploadedFileReferenceConverter');
         \TYPO3\CMS\Extbase\Utility\ExtensionUtility::registerTypeConverter('Pixelant\\Importify\\Property\\TypeConverter\\ObjectStorageConverter');
     }

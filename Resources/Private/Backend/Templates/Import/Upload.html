@@ -15,5 +15,37 @@ Otherwise your changes will be overwritten the next time you save the extension 
 <f:section name="content">
 <h1>Upload</h1>
 
+<table>
+    <f:for each="{csvArray}" as="csvData" iteration="i">
+        <f:if condition="{i.index}==0">
+            <f:then>
+                <thead>
+                   <tr>
+                    <f:form.select name="Delimeter" options="{
+                        ',': 'Comma (,)'}",
+                        ';': 'Semi-colon (;)'
+                    />
+                    <f:form.select name="Enclosure" options="{
+                        '\"': 'Citation (\")',
+                        ' ': 'Space ( )'}"
+                    />
+                     <f:for each="{csvData}" as="fields">
+                         <th>{fields}</th>
+                     </f:for>
+                   </tr>
+                 </thead>
+                 <tbody>
+            </f:then>
+            <f:else>
+                <tr>
+                  <f:for each="{csvData}" as="fields">
+                      <td>{fields}</td>
+                  </f:for>
+                </tr>
+            </f:else>
+        </f:if>
+    </f:for>
+    </tbody>
+</table>
 <f:flashMessages />
 </f:section>

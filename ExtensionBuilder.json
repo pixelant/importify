@@ -3,8 +3,8 @@
         {
             "config": {
                 "position": [
-                    273,
-                    107
+                    256,
+                    10
                 ]
             },
             "name": "New Model Object",
@@ -39,8 +39,8 @@
                             "allowedFileTypes": "",
                             "maxItems": "1",
                             "propertyDescription": "",
-                            "propertyIsExcludeField": true,
-                            "propertyIsRequired": false,
+                            "propertyIsExcludeField": false,
+                            "propertyIsRequired": true,
                             "propertyName": "file",
                             "propertyType": "File",
                             "uid": "819586893784"
@@ -49,11 +49,21 @@
                             "allowedFileTypes": "",
                             "maxItems": "1",
                             "propertyDescription": "",
-                            "propertyIsExcludeField": true,
-                            "propertyIsRequired": false,
-                            "propertyName": "filename",
+                            "propertyIsExcludeField": false,
+                            "propertyIsRequired": true,
+                            "propertyName": "delimeter",
                             "propertyType": "String",
-                            "uid": "557706469573"
+                            "uid": "968746427292"
+                        },
+                        {
+                            "allowedFileTypes": "",
+                            "maxItems": "1",
+                            "propertyDescription": "",
+                            "propertyIsExcludeField": false,
+                            "propertyIsRequired": true,
+                            "propertyName": "enclosure",
+                            "propertyType": "String",
+                            "uid": "1260576202734"
                         }
                     ]
                 },
@@ -106,7 +116,7 @@
     },
     "wires": [],
     "log": {
-        "last_modified": "2017-06-02 01:54",
+        "last_modified": "2017-06-14 03:46",
         "extension_builder_version": "8.6.0",
         "be_user": " (1)"
     }
