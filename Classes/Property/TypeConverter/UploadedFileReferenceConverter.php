@@ -115,17 +115,28 @@ class UploadedFileReferenceConverter extends AbstractTypeConverter
      * @return \TYPO3\CMS\Extbase\Domain\Model\AbstractFileFolder
      * @api
      */
-    public function convertFrom($source, $targetType, array $convertedChildProperties = [], PropertyMappingConfigurationInterface $configuration = null)
-    {
+    public function convertFrom(
+        $source,
+        $targetType,
+        array $convertedChildProperties = [],
+        PropertyMappingConfigurationInterface $configuration = null
+    ) {
         if (!isset($source['error']) || $source['error'] === \UPLOAD_ERR_NO_FILE) {
             if (isset($source['submittedFile']['resourcePointer'])) {
                 try {
-                    $resourcePointer = $this->hashService->validateAndStripHmac($source['submittedFile']['resourcePointer']);
+                    $resourcePointer = $this->hashService->validateAndStripHmac(
+                        $source['submittedFile']['resourcePointer']
+                    );
                     if (strpos($resourcePointer, 'name:') === 0) {
                         $fileUid = substr($resourcePointer, 5);
-                        return $this->createFileReferenceFromFalFileObject($this->resourceFactory->getFileObject($fileUid));
+                        return $this->createFileReferenceFromFalFileObject(
+                            $this->resourceFactory->getFileObject($fileUid)
+                        );
                     } else {
-                        return $this->createFileReferenceFromFalFileReferenceObject($this->resourceFactory->getFileReferenceObject($resourcePointer), $resourcePointer);
+                        return $this->createFileReferenceFromFalFileReferenceObject(
+                            $this->resourceFactory->getFileReferenceObject($resourcePointer),
+                            $resourcePointer
+                        );
                     }
                 } catch (\InvalidArgumentException $e) {
                     // Nothing to do. No file is uploaded and resource pointer is invalid. Discard!
@@ -141,7 +152,11 @@ class UploadedFileReferenceConverter extends AbstractTypeConverter
                 case \UPLOAD_ERR_PARTIAL:
                     return new Error('Error Code: ' . $source['error'], 1264440823);
                 default:
-                    return new Error('An error occurred while uploading. Please try again or contact the administrator if the problem remains', 1340193849);
+                    return new Error(
+                        'An error occurred while uploading.
+                        Please try again or contact the administrator if the problem remains',
+                        1340193849
+                    );
             }
         }
 
@@ -174,7 +189,10 @@ class UploadedFileReferenceConverter extends AbstractTypeConverter
             throw new TypeConverterException('Uploading files with PHP file extensions is not allowed!', 1399312430);
         }
 
-        $allowedFileExtensions = $configuration->getConfigurationValue('Pixelant\\Importify\\Property\\TypeConverter\\UploadedFileReferenceConverter', self::CONFIGURATION_ALLOWED_FILE_EXTENSIONS);
+        $allowedFileExtensions = $configuration->getConfigurationValue(
+            'Pixelant\\Importify\\Property\\TypeConverter\\UploadedFileReferenceConverter',
+            self::CONFIGURATION_ALLOWED_FILE_EXTENSIONS
+        );
         if ($allowedFileExtensions !== null) {
             $filePathInfo = PathUtility::pathinfo($uploadInfo['name']);
             if (!GeneralUtility::inList($allowedFileExtensions, strtolower($filePathInfo['extension']))) {
@@ -182,19 +200,26 @@ class UploadedFileReferenceConverter extends AbstractTypeConverter
             }
         }
 
-        $uploadFolderId = $configuration->getConfigurationValue('Pixelant\\Importify\\Property\\TypeConverter\\UploadedFileReferenceConverter', self::CONFIGURATION_UPLOAD_FOLDER) ?: $this->defaultUploadFolder;
+        $uploadFolderId = $configuration->getConfigurationValue(
+            'Pixelant\\Importify\\Property\\TypeConverter\\UploadedFileReferenceConverter',
+            self::CONFIGURATION_UPLOAD_FOLDER
+        ) ?: $this->defaultUploadFolder;
         if (class_exists('TYPO3\\CMS\\Core\\Resource\\DuplicationBehavior')) {
             $defaultConflictMode = \TYPO3\CMS\Core\Resource\DuplicationBehavior::RENAME;
         } else {
             // @deprecated since 7.6 will be removed once 6.2 support is removed
             $defaultConflictMode = 'changeName';
         }
-        $conflictMode = $configuration->getConfigurationValue('Pixelant\\Importify\\Property\\TypeConverter\\UploadedFileReferenceConverter', self::CONFIGURATION_UPLOAD_CONFLICT_MODE) ?: $defaultConflictMode;
+        $conflictMode = $configuration->getConfigurationValue(
+            'Pixelant\\Importify\\Property\\TypeConverter\\UploadedFileReferenceConverter',
+            self::CONFIGURATION_UPLOAD_CONFLICT_MODE
+        ) ?: $defaultConflictMode;
 
         $uploadFolder = $this->resourceFactory->retrieveFileOrFolderObject($uploadFolderId);
         $uploadedFile =  $uploadFolder->addUploadedFile($uploadInfo, $conflictMode);
 
-        $resourcePointer = isset($uploadInfo['submittedFile']['resourcePointer']) && strpos($uploadInfo['submittedFile']['resourcePointer'], 'name:') === false
+        $resourcePointer = isset($uploadInfo['submittedFile']['resourcePointer']) &&
+        strpos($uploadInfo['submittedFile']['resourcePointer'], 'name:') === false
                 ? $this->hashService->validateAndStripHmac($uploadInfo['submittedFile']['resourcePointer'])
                 : null;
 
@@ -226,13 +251,19 @@ class UploadedFileReferenceConverter extends AbstractTypeConverter
      * @param int $resourcePointer
      * @return \Pixelant\Importify\Domain\Model\FileReference
      */
-    protected function createFileReferenceFromFalFileReferenceObject(FalFileReference $falFileReference, $resourcePointer = null)
-    {
+    protected function createFileReferenceFromFalFileReferenceObject(
+        FalFileReference $falFileReference,
+        $resourcePointer = null
+    ) {
         if ($resourcePointer === null) {
             /** @var $fileReference \Pixelant\Importify\Domain\Model\FileReference */
             $fileReference = $this->objectManager->get('TYPO3\\CMS\\Extbase\\Domain\\Model\\FileReference');
         } else {
-            $fileReference = $this->persistenceManager->getObjectByIdentifier($resourcePointer, 'TYPO3\\CMS\\Extbase\\Domain\\Model\\FileReference', false);
+            $fileReference = $this->persistenceManager->getObjectByIdentifier(
+                $resourcePointer,
+                'TYPO3\\CMS\\Extbase\\Domain\\Model\\FileReference',
+                false
+            );
         }
 
         $fileReference->setOriginalResource($falFileReference);

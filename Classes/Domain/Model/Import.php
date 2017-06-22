@@ -2,6 +2,7 @@
 namespace Pixelant\Importify\Domain\Model;
 
 use TYPO3\CMS\Extbase\Persistence\ObjectStorage;
+
 /***
  *
  * This file is part of the "Import" Extension for TYPO3 CMS.

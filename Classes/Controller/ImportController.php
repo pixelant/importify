@@ -119,7 +119,6 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
     {
         $newImport = new \Pixelant\Importify\Domain\Model\Import();
         $this->view->assign('newImport', $newImport);
-
     }
 
     /**
@@ -134,7 +133,9 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
             $this->addFlashMessage('File was missing!');
         } else {
             $this->importRepository->add($newImport);
-            $persistenceManager = $this->objectManager->get(\TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager::class);
+            $persistenceManager = $this->objectManager->get(
+                \TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager::class
+            );
             $persistenceManager->persistAll();
             $this->addFlashMessage('The object was created');
             $this->redirect('show', 'Import', 'Importify', ['import' => $newImport]);
@@ -142,7 +143,7 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
     }
 
     /**
-     * action uoload
+     * action upload
      *
      * @param string $identifier
      * @return void
@@ -198,8 +199,9 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
      */
     public function getTableColumnNameAction(
         \Psr\Http\Message\ServerRequestInterface $request,
-        \Psr\Http\Message\ResponseInterface $response)
-    {
+        \Psr\Http\Message\ResponseInterface $response
+    ) {
+    
         $data = $request->getParsedBody();
         $column_names = array_keys($GLOBALS['TCA'][$data['table']]['columns']);
         $json = json_encode($column_names);
@@ -216,8 +218,8 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
      */
     public function importFileAction(
         \Psr\Http\Message\ServerRequestInterface $request,
-        \Psr\Http\Message\ResponseInterface $response)
-    {
+        \Psr\Http\Message\ResponseInterface $response
+    ) {
         $data = $request->getParsedBody();
         $importData = $data['importData'];
         $connePool = GeneralUtility::makeInstance(ConnectionPool::class);
@@ -233,7 +235,7 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
             $col = 0;
             foreach ($data as $key => $value) {
                 $keyLowerCase = strtolower($key);
-                $value = str_replace('−','-',$value);
+                $value = str_replace('−', '-', $value);
                 $invalid = $this->invalidInput($columns[$keyLowerCase], $value, $keyLowerCase);
                 if ($invalid) {
                     $error[$row][$col][] = $invalid;
@@ -244,7 +246,7 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
         }
 
         // insert if $error is not changed
-        if($error === null){
+        if ($error === null) {
             foreach ($importData as $data) {
                 foreach ($data as $key => $value) {
                     if ($invalid) {
@@ -266,7 +268,8 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
      * @param string $columnName
      * @return string $error
      */
-    public function invalidInput($column, $input, $columnName){
+    public function invalidInput($column, $input, $columnName)
+    {
         $typeIsString = $this->isDatabaseTypeString($column->getType());
         $typeIsNumeric = $this->isDatabaseTypeNumeric($column->getType());
         $dbStructureIsUnsigned = $column->getUnsigned();
@@ -290,7 +293,8 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
      * @param \Doctrine\DBAL\Types\Type $type
      * @return boolean
      */
-    protected function isDatabaseTypeString($type) {
+    protected function isDatabaseTypeString($type)
+    {
         $type = strtoupper($type);
         return $type === 'CHAR' ||
             $type === 'VARCHAR' ||
@@ -312,7 +316,8 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
      * @param \Doctrine\DBAL\Types\Type $type
      * @return boolean
      */
-    protected function isDatabaseTypeNumeric($type) {
+    protected function isDatabaseTypeNumeric($type)
+    {
         $type = strtoupper($type);
         return $type === 'TINYINT' ||
             $type === 'SMALLINT' ||
@@ -334,14 +339,15 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
      * @param string $input
      * @return boolean
      */
-    public function invalidInputLenght($type, $databaseIsUnsigned, $length, $input){
+    public function invalidInputLenght($type, $databaseIsUnsigned, $length, $input)
+    {
         $typeIsString=$this->isDatabaseTypeString($type);
         $typeIsNumeric=$this->isDatabaseTypeNumeric($type);
         $inputIsUnsigned=ctype_digit($input);
 
-        if($typeIsString){
+        if ($typeIsString) {
             return $length < strlen($input);
-        } elseif($typeIsNumeric){
+        } elseif ($typeIsNumeric) {
             $type = strtoupper($type);
             if ($inputIsUnsigned && $databaseIsUnsigned) {
                 switch ($type) {
@@ -399,6 +405,9 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
             UploadedFileReferenceConverter::CONFIGURATION_UPLOAD_FOLDER => '1:/user_upload/'
         ];
         $newImportConfiguration = $this->arguments[$argumentName]->getPropertyMappingConfiguration();
-        $newImportConfiguration->forProperty('file')->setTypeConverterOptions('Pixelant\\Importify\\Property\\TypeConverter\\UploadedFileReferenceConverter', $uploadConfiguration);
+        $newImportConfiguration->forProperty('file')->setTypeConverterOptions(
+            'Pixelant\\Importify\\Property\\TypeConverter\\UploadedFileReferenceConverter',
+            $uploadConfiguration
+        );
     }
 }

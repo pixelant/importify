@@ -10,11 +10,31 @@
         }
     ],
     "require": {
-        "typo3/cms-core": "^8.6.1"
+        "php": "^7.0"
+    },
+    "require-dev": {
+        "squizlabs/php_codesniffer": "2.*",
+        "phpunit/phpunit": "^5.4"
+    },
+    "config": {
+        "vendor-dir": ".Build/vendor",
+        "bin-dir": ".Build/bin"
     },
     "autoload": {
         "psr-4": {
             "Pixelant\\Importify\\": "Classes"
         }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Pixelant\\Crowdfunding\\Tests\\": "Tests/",
+            "TYPO3\\CMS\\Core\\Tests\\": ".Build/vendor/typo3/cms/typo3/sysext/core/Tests/",
+            "TYPO3\\CMS\\Fluid\\Tests\\": ".Build/vendor/typo3/cms/typo3/sysext/fluid/Tests/"
+        }
+    },
+    "scripts": {
+        "php:codesniffer": ".Build/bin/phpcs --standard=PSR2 Classes/ Tests/ *.php",
+        "php:codefixer": ".Build/bin/phpcbf --standard=PSR2 Classes/ --report=diff Tests/ *.php",
+        "php:unittests": "export TYPO3_PATH_WEB=$PWD/.Build/Web && .Build/bin/phpunit -c .Build/vendor/nimut/testing-framework/res/Configuration/UnitTests.xml Tests/"
     }
 }
