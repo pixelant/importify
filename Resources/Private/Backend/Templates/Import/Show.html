@@ -68,30 +68,32 @@ Otherwise your changes will be overwritten the next time you save the extension 
 
 <f:form.button id="importButton" type="submit" name="buttonName">IMPORT!!!</f:form.button>
 
+<!--JS script for ajax request when select-element changes and when import button clicked-->
 <script>
     $('#table').change(function(){
         var selected = $('#table option:selected').text();
         $('#mapping > body').fadeTo(1000, 0.5);
         $.ajax({
-            url: TYPO3.settings.ajaxUrls['unique_identifier'],
+            url: TYPO3.settings.ajaxUrls['get_column_name'],
             method: 'POST',
             dataType: 'json',
             data: {table: $('#table option:selected').text()},
             success: function(res) {
+                // clear the html for the select-element, so the options doesnt keep increase
                 $('.columns').html('html');
-                var i=0;
-                res.forEach(function(column) {
-                    $('.columns').append($('<option>', { value: column, text: column }));
-                    $('.columns')[i].value = column;
+                var i = 0;
+                for (var column in res){
+                    $('.columns').append($('<option>', {value: res[column], text: res[column]}));
+                    // show selected option in asc order by the position in array
+                    $('.columns:eq(' + i + ') option:eq(' + i + ')').attr('selected', 'selected');
                     i++;
-                });
+                }
                 $('#mapping > tbody').fadeTo(1000, 1);
             }
         });
     });
 
-
-    $('#importButton').click(function(){
+    $('#importButton').click(function() {
         var importData = [];
         $('#import-data tbody tr').each(function() {
             var $tr = $(this);
@@ -111,11 +113,11 @@ Otherwise your changes will be overwritten the next time you save the extension 
             url: TYPO3.settings.ajaxUrls['import_file'],
             method: 'POST',
             dataType: 'json',
-            data: {importData: importData,table: $('#table option:selected').text()},
+            data: {importData: importData, table: $('#table option:selected').text()},
             success: function(res) {
                 console.log(res);
             },
-            error: function (xhr, ajaxOptions, thrownError) {
+            error: function(xhr, ajaxOptions, thrownError) {
                 var err = eval("(" + xhr.responseText + ")");
                 console.log(err.Message);
             }

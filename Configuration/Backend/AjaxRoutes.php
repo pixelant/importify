@@ -1,9 +1,9 @@
 <?php
 
 return [
-    'unique_identifier' => [
-        'path' => '/unique/identifier',
-        'target' => \Pixelant\Importify\Controller\ImportController::class . '::getTableContentAction'
+    'get_column_name' => [
+        'path' => '/get/column/name',
+        'target' => \Pixelant\Importify\Controller\ImportController::class . '::getTableColumnNameAction'
     ],
     'import_file' => [
         'path' => '/import/file',
