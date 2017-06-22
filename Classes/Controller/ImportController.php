@@ -278,11 +278,11 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
         $inputIsUnsigned = ctype_digit($input);
 
         if (!($typeIsString && $inputIsString || $typeIsNumeric && $inputIsNumeric)) {
-            $error = "Invalid data:" . $input . ", for type " . $column->getType() . " for column " . $columnName;
+            $error = 'Invalid data:' . $input . ', for type ' . $column->getType() . ' for column ' . $columnName;
         } elseif ($typeIsNumeric && $dbStructureIsUnsigned && !$inputIsUnsigned && $inputIsNumeric) {
-            $error = "Data:" . $input . ", Not Unsigned column: " . $columnName;
+            $error = 'Data:' . $input . ', Not Unsigned column: ' . $columnName;
         } elseif ($this->invalidInputLenght($column->getType(), $dbStructureIsUnsigned, $column->getLength(), $input)) {
-            $error = "Data:" . $input . ", not allowed length for column:" . $columnName;
+            $error = 'Data:' . $input . ', not allowed length for column:' . $columnName;
         }
         return $error;
     }
@@ -351,43 +351,43 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
             $type = strtoupper($type);
             if ($inputIsUnsigned && $databaseIsUnsigned) {
                 switch ($type) {
-                    case "TINYINT":
+                    case 'TINYINT':
                         return self::MAX_TINYINT_UNSIGNED < $input;
-                    case "SMALLINT":
+                    case 'SMALLINT':
                         return self::MAX_SMALLINT_UNSIGNED < $input;
-                    case "MEDIUMINT":
+                    case 'MEDIUMINT':
                         return self::MAX_SMALLINT_UNSIGNED < $input;
-                    case "INT":
-                    case "INTEGER":
+                    case 'INT':
+                    case 'INTEGER':
                         return self::MAX_INT_UNSIGNED < $input;
-                    case "BIGINT":
+                    case 'BIGINT':
                         return self::MAX_BIGINT_UNSIGNED < $input;
-                    case "DECIMAL":
+                    case 'DECIMAL':
                         return self::MAX_DECIMAL_UNSIGNED < $input;
                     default:
-                        echo "UNSIGNED DEFAULT ERROR!!";
+                        echo 'UNSIGNED DEFAULT ERROR!!';
                 }
             } else {
                 switch ($type) {
-                    case "TINYINT":
+                    case 'TINYINT':
                         return self::MAX_TINYINT_SIGNED < $input || self::MIN_TINYINT_SIGNED > $input;
-                    case "SMALLINT":
+                    case 'SMALLINT':
                         return self::MAX_SMALLINT_SIGNED < $input || self::MIN_SMALLINT_SIGNED > $input;
-                    case "MEDIUMINT":
+                    case 'MEDIUMINT':
                         return self::MAX_SMALLINT_SIGNED < $input || self::MIN_SMALLINT_SIGNED > $input;
-                    case "INT":
-                    case "INTEGER":
+                    case 'INT':
+                    case 'INTEGER':
                         return self::MAX_INT_SIGNED < $input || self::MIN_INT_SIGNED > $input;
-                    case "BIGINT":
+                    case 'BIGINT':
                         return self::MAX_BIGINT_SIGNED < $input || self::MIN_BIGINT_SIGNED > $input;
-                    case "FLOAT":
+                    case 'FLOAT':
                         return self::MAX_FLOAT_SIGNED < $input || self::MIN_FLOAT_SIGNED > $input;
-                    case "DOUBLE":
+                    case 'DOUBLE':
                         return self::MAX_DOUBLE_SIGNED < $input || self::MIN_DOUBLE_SIGNED > $input;
-                    case "DECIMAL":
+                    case 'DECIMAL':
                         return self::MAX_DECIMAL_SIGNED < $input || self::MIN_DECIMAL_SIGNED > $input;
                     default:
-                        echo "SIGNED ERROR DEFAULT!!";
+                        echo 'SIGNED ERROR DEFAULT!!';
                 }
             }
         }
