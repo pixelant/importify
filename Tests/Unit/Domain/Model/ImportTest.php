@@ -53,24 +53,49 @@ class ImportTest extends \TYPO3\CMS\Core\Tests\UnitTestCase
     /**
      * @test
      */
-    public function getFilenameReturnsInitialValueForString()
+    public function getDelimeterReturnsInitialValueForString()
     {
         self::assertSame(
             '',
-            $this->subject->getFilename()
+            $this->subject->getDelimeter()
         );
     }
 
     /**
      * @test
      */
-    public function setFilenameForStringSetsFilename()
+    public function setDelimeterForStringSetsDelimeter()
     {
-        $this->subject->setFilename('Conceived at T3CON10');
+        $this->subject->setDelimeter('Conceived at T3CON10');
 
         self::assertAttributeEquals(
             'Conceived at T3CON10',
-            'filename',
+            'delimeter',
+            $this->subject
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function getEnclosureReturnsInitialValueForString()
+    {
+        self::assertSame(
+            '',
+            $this->subject->getEnclosure()
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function setEnclosureForStringSetsEnclosure()
+    {
+        $this->subject->setEnclosure('Conceived at T3CON10');
+
+        self::assertAttributeEquals(
+            'Conceived at T3CON10',
+            'enclosure',
             $this->subject
         );
     }

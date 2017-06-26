@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <xliff version="1.0">
-	<file source-language="en" datatype="plaintext" original="messages" date="2017-06-02T13:54:10Z" product-name="importify">
+	<file source-language="en" datatype="plaintext" original="messages" date="2017-06-14T15:46:19Z" product-name="importify">
 		<header/>
 		<body>
 			<trans-unit id="tx_importify_domain_model_import">
@@ -8,6 +8,15 @@
 			</trans-unit>
 			<trans-unit id="tx_importify_domain_model_import.file">
 				<source>File</source>
+			</trans-unit>
+			<trans-unit id="tx_importify_domain_model_import.delimeter">
+				<source>Delimeter</source>
+			</trans-unit>
+			<trans-unit id="tx_importify_domain_model_import.enclosure">
+				<source>Enclosure</source>
+			</trans-unit>
+			<trans-unit id="tx_importify_domain_model_import.delimiter">
+				<source>Delimiter</source>
 			</trans-unit>
 			<trans-unit id="tx_importify_domain_model_import.filename">
 				<source>Filename</source>

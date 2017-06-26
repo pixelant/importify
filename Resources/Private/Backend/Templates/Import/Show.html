@@ -16,7 +16,110 @@ Otherwise your changes will be overwritten the next time you save the extension 
 <h1>Single View for Import</h1>
 
 <f:flashMessages />
-<f:render partial="Import/Properties" arguments="{import:import}" />
+<h2><f:render partial="Import/Properties" arguments="{import:import}" /></h2>
 <f:link.action action="list">Back to list</f:link.action><br />
-<f:link.action action="create">New Import</f:link.action>
+<h2>Preview</h2>
+<table id="import-data">
+    <thead>
+       <tr>
+         <f:for each="{csvHeader}" as="header">
+             <th class="inputColumns">{header}</th>
+         </f:for>
+       </tr>
+     </thead>
+     <tbody>
+    <f:for each="{csvArray}" as="csvData" iteration="i">
+        <tr>
+          <f:for each="{csvData}" as="value" iteration="j">
+              <td class="inputFields" data-csv-field="{csvHeader.{j.index}}">{value}</td>
+          </f:for>
+        </tr>
+    </f:for>
+    </tbody>
+</table>
+
+<h2>Import - Choose table and select the columns to import to</h2>
+<table id="mapping">
+    <thead>
+        <tr>
+          <th>Import from table</th>
+          <th>Import to table</th>
+       </tr>
+       <tr>
+          <th>{import.file.originalResource.name}</th>
+          <th>
+            <f:form.select id="table" name="table" options="{allowedTables}"/>
+         </th>
+       </tr>
+     </thead>
+     <tbody>
+        <f:for each="{csvHeader}" as="input" iteration="i"> 
+            <tr>
+                <td>
+                    <f:form.select class="inputs" name="inputs" options="{csvHeader}" value="{i.index}"/>
+                </td>
+                <td>
+                    <f:form.select class="columns" name="columns" options="{fe_users_columns}" value="{i.index}"/>
+                </td>
+            </tr>
+        </f:for>
+    </tbody>
+</table>
+
+<f:form.button id="importButton" type="submit" name="buttonName">IMPORT!!!</f:form.button>
+
+<!--JS script for ajax request when select-element changes and when import button clicked-->
+<script>
+    $('#table').change(function(){
+        var selected = $('#table option:selected').text();
+        $('#mapping > body').fadeTo(1000, 0.5);
+        $.ajax({
+            url: TYPO3.settings.ajaxUrls['get_column_name'],
+            method: 'POST',
+            dataType: 'json',
+            data: {table: $('#table option:selected').text()},
+            success: function(res) {
+                // clear the html for the select-element, so the options doesnt keep increase
+                $('.columns').html('html');
+                var i = 0;
+                for (var column in res){
+                    $('.columns').append($('<option>', {value: res[column], text: res[column]}));
+                    // show selected option in asc order by the position in array
+                    $('.columns:eq(' + i + ') option:eq(' + i + ')').attr('selected', 'selected');
+                    i++;
+                }
+                $('#mapping > tbody').fadeTo(1000, 1);
+            }
+        });
+    });
+
+    $('#importButton').click(function() {
+        var importData = [];
+        $('#import-data tbody tr').each(function() {
+            var $tr = $(this);
+            var data = {};
+            $('#mapping tr').each(function() {
+                var csvField = $(this).find('.inputs option:selected').text();
+                var databaseField = $(this).find('.columns option:selected').text();
+                if (databaseField && csvField) {
+                    var csvValue = $tr.find('td[data-csv-field=' + csvField + ']').text();
+                    data[databaseField] = csvValue;
+                }
+            });
+            importData.push(data);
+        });
+
+        $.ajax({
+            url: TYPO3.settings.ajaxUrls['import_file'],
+            method: 'POST',
+            dataType: 'json',
+            data: {importData: importData, table: $('#table option:selected').text()},
+            success: function(res) {
+            },
+            error: function(xhr, ajaxOptions, thrownError) {
+                var err = eval('(' + xhr.responseText + ')');
+            }
+        });
+    });
+</script>
 </f:section>

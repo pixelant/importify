@@ -1,5 +1,6 @@
 <?php
 namespace Pixelant\Importify\Domain\Model;
+
 /***************************************************************
  *  Copyright notice
  *

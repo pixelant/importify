@@ -13,3 +13,10 @@ module.tx_importify_tools_importifyimportdata {
         layoutRootPaths.1 = {$module.tx_importify_importdata.view.layoutRootPath}
     }
 }
+
+## EXTENSION BUILDER DEFAULTS END TOKEN - Everything BEFORE this line is overwritten with the defaults of the extension builder
+module.tx_importify_tools_importifyimportdata {
+    settings {
+        allowedTables = fe_users, be_users, tx_news_domain_model_news
+    }
+}

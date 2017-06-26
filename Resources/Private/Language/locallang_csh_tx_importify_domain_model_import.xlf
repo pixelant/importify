@@ -1,10 +1,19 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <xliff version="1.0">
-	<file source-language="en" datatype="plaintext" original="messages" date="2017-06-02T13:54:10Z" product-name="importify">
+	<file source-language="en" datatype="plaintext" original="messages" date="2017-06-14T15:46:20Z" product-name="importify">
 		<header/>
 		<body>
 			<trans-unit id="file.description">
 				<source>file</source>
+			</trans-unit>
+			<trans-unit id="delimeter.description">
+				<source>delimeter</source>
+			</trans-unit>
+			<trans-unit id="enclosure.description">
+				<source>enclosure</source>
+			</trans-unit>
+			<trans-unit id="delimiter.description">
+				<source>delimiter</source>
 			</trans-unit>
 			<trans-unit id="filename.description">
 				<source>filename</source>

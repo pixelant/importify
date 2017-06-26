@@ -66,7 +66,9 @@ class UploadViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\Form\UploadViewHelpe
                 // Use the file UID instead, but prefix it with "file:" to communicate this to the type converter
                 $resourcePointerValue = 'file:' . $resource->getOriginalResource()->getOriginalFile()->getUid();
             }
-            $output .= '<input type="hidden" name="' . $this->getName() . '[submittedFile][resourcePointer]" value="' . htmlspecialchars($this->hashService->appendHmac((string)$resourcePointerValue)) . '"' . $resourcePointerIdAttribute . ' />';
+            $output .= '<input type="hidden" name="' . $this->getName() . '[submittedFile][resourcePointer]" value="' .
+            htmlspecialchars($this->hashService->appendHmac((string)$resourcePointerValue))
+                . '"' . $resourcePointerIdAttribute . ' />';
 
             $this->templateVariableContainer->add('resource', $resource);
             $output .= $this->renderChildren();

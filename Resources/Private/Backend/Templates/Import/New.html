@@ -17,10 +17,10 @@ Otherwise your changes will be overwritten the next time you save the extension 
 
 <f:flashMessages />
 
-<f:render partial="FormErrors" arguments="{object:'newImport'}"/>
+<f:render partial="FormErrors" arguments="{object:'newImport'}" />
 
-<f:form action="create"  enctype="multipart/form-data" name="newImport" object="{newImport}">
+<f:form action="create" enctype="multipart/form-data" name="newImport" object="{newImport}">
 <f:render partial="Import/FormFields" />
-	<f:form.submit value="Create new" />
+<f:form.submit value="Create new" />
 </f:form>
 </f:section>

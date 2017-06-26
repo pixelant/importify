@@ -7,7 +7,8 @@ CREATE TABLE tx_importify_domain_model_import (
 	pid int(11) DEFAULT '0' NOT NULL,
 
 	file int(11) unsigned NOT NULL default '0',
-	filename varchar(255) DEFAULT '' NOT NULL,
+	delimeter varchar(255) DEFAULT '' NOT NULL,
+	enclosure varchar(255) DEFAULT '' NOT NULL,
 
 	tstamp int(11) unsigned DEFAULT '0' NOT NULL,
 	crdate int(11) unsigned DEFAULT '0' NOT NULL,
@@ -38,3 +39,5 @@ CREATE TABLE tx_importify_domain_model_import (
 	KEY language (l10n_parent,sys_language_uid)
 
 );
+
+## EXTENSION BUILDER DEFAULTS END TOKEN - Everything BEFORE this line is overwritten with the defaults of the extension builder

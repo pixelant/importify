@@ -22,17 +22,27 @@ class Import extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     /**
      * file
      *
-     * @var  \TYPO3\CMS\Extbase\Domain\Model\FileReference
+     * @var \TYPO3\CMS\Extbase\Domain\Model\FileReference
      * @cascade remove
+     * @validate NotEmpty
      */
-    protected $file;
+    protected $file = null;
 
     /**
-     * filename
+     * delimeter
      *
      * @var string
+     * @validate NotEmpty
      */
-    protected $filename = '';
+    protected $delimeter = '';
+
+    /**
+     * enclosure
+     *
+     * @var string
+     * @validate NotEmpty
+     */
+    protected $enclosure = '';
 
     /**
      * Returns the file
@@ -56,23 +66,44 @@ class Import extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     }
 
     /**
-     * Returns the filename
+     * Returns the delimeter
      *
-     * @return string filename
+     * @return string $delimeter
      */
-    public function getFilename()
+    public function getDelimeter()
     {
-        return $this->filename;
+        return $this->delimeter;
     }
 
     /**
-     * Sets the filename
+     * Sets the delimeter
      *
-     * @param string $filename
+     * @param string $delimeter
      * @return void
      */
-    public function setFilename($filename)
+    public function setDelimeter($delimeter)
     {
-        $this->filename = $filename;
+        $this->delimeter = $delimeter;
+    }
+
+    /**
+     * Returns the enclosure
+     *
+     * @return string $enclosure
+     */
+    public function getEnclosure()
+    {
+        return $this->enclosure;
+    }
+
+    /**
+     * Sets the enclosure
+     *
+     * @param string $enclosure
+     * @return void
+     */
+    public function setEnclosure($enclosure)
+    {
+        $this->enclosure = $enclosure;
     }
 }

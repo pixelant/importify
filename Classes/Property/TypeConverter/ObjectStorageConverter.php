@@ -58,7 +58,9 @@ class ObjectStorageConverter extends \TYPO3\CMS\Extbase\Property\TypeConverter\O
         // TODO: Find a nicer way to throw away empty uploads
         foreach ($source as $propertyName => $propertyValue) {
             if ($this->isUploadType($propertyValue)) {
-                if ($propertyValue['error'] !== \UPLOAD_ERR_NO_FILE || isset($propertyValue['submittedFile']['resourcePointer'])) {
+                if ($propertyValue['error'] !== \UPLOAD_ERR_NO_FILE ||
+                    isset($propertyValue['submittedFile']['resourcePointer'])
+                ) {
                     $propertiesToConvert[$propertyName] = $propertyValue;
                 }
             } else {
