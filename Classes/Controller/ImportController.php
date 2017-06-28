@@ -48,6 +48,10 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
     const MIN_FLOAT_SIGNED = -3.402823466E+38;
     const MIN_DOUBLE_SIGNED = -1.79E+308;
     const MIN_DECIMAL_SIGNED = -10**38+1;
+    const STRING_TYPES = ['CHAR','VARCHAR', 'TINYTEXT', 'BLOB', 'MEDIUMTEXT', 'MEDIUMBLOB', 'LONGTEXT',
+                        'LONGBLOB', 'ENUM', 'TEXT', 'STRING', 'SET'];
+    const INTEGER_TYPES = ['TINYINT','SMALLINT', 'MEDIUMINT', 'INT', 'INTEGER', 'BIGINT', 'FLOAT',
+                        'DOUBLE', 'DECIMAL'];
 
     /**
      * importRepository
@@ -95,17 +99,25 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
     {
         $this->view->assign('import', $import);
         $fe_users_columns = array_keys($GLOBALS['TCA']['fe_users']['columns']);
-        $this->view->assign('fe_users_columns', $fe_users_columns);
+        $this->view->assign('fe_users_columns', array_combine($fe_users_columns, $fe_users_columns));
         $file = $import->getFile()->getOriginalResource()->getOriginalFile();
         $content = $file->getContents();
         $delimeter = $import->getDelimeter();
         $fieldEnclosure = $import->getEnclosure();
 
         $csvArray = \TYPO3\CMS\Core\Utility\CsvUtility::csvToArray($content, $delimeter, $fieldEnclosure);
-        $allowedTables = GeneralUtility::trimExplode(',', $this->settings['allowedTables']);
         $csvHeader = array_shift($csvArray);
+
+        $allowedTables = GeneralUtility::trimExplode(',', $this->settings['allowedTables']);
+        
         $this->view->assign('allowedTables', $allowedTables);
-        $this->view->assign('csvHeader', $csvHeader);
+        $this->view->assign('csvHeader', array_combine($csvHeader, $csvHeader));
+
+        $i = 0;
+        foreach ($csvArray as $csvData) {
+            $csvArray[$i] = array_combine($csvHeader, $csvArray[$i]);
+            $i++;
+        }
         $this->view->assign('csvArray', $csvArray);
     }
 
@@ -238,7 +250,7 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
                 $value = str_replace('−', '-', $value);
                 $invalid = $this->invalidInput($columns[$keyLowerCase], $value, $keyLowerCase);
                 if ($invalid) {
-                    $error[$row][$col][] = $invalid;
+                    $error[] = [$row . '-' . $col => $invalid];
                 }
                 $col++;
             }
@@ -256,6 +268,7 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
                 $queryBuilder->values($data)->execute();
             }
         }
+
         $response->getBody()->write(json_encode(['error' => $error]));
         return $response;
     }
@@ -278,11 +291,11 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
         $inputIsUnsigned = ctype_digit($input);
 
         if (!($typeIsString && $inputIsString || $typeIsNumeric && $inputIsNumeric)) {
-            $error = 'Invalid data:' . $input . ', for type ' . $column->getType() . ' for column ' . $columnName;
+            $error = 'invalid Type ' . $column->getType() . ' for column ' . $columnName;
         } elseif ($typeIsNumeric && $dbStructureIsUnsigned && !$inputIsUnsigned && $inputIsNumeric) {
-            $error = 'Data:' . $input . ', Not Unsigned column: ' . $columnName;
+            $error = 'not Unsigned for column ' . $columnName;
         } elseif ($this->invalidInputLenght($column->getType(), $dbStructureIsUnsigned, $column->getLength(), $input)) {
-            $error = 'Data:' . $input . ', not allowed length for column:' . $columnName;
+            $error = 'not allowed Length for column ' . $columnName;
         }
         return $error;
     }
@@ -296,18 +309,7 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
     protected function isDatabaseTypeString($type)
     {
         $type = strtoupper($type);
-        return $type === 'CHAR' ||
-            $type === 'VARCHAR' ||
-            $type === 'TINYTEXT' ||
-            $type === 'BLOB' ||
-            $type === 'MEDIUMTEXT' ||
-            $type === 'MEDIUMBLOB' ||
-            $type === 'LONGTEXT' ||
-            $type === 'LONGBLOB' ||
-            $type === 'ENUM' ||
-            $type === 'TEXT'||
-            $type === 'STRING'||
-            $type === 'SET';
+        return in_array($type, self::STRING_TYPES);
     }
 
     /**
@@ -319,15 +321,7 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
     protected function isDatabaseTypeNumeric($type)
     {
         $type = strtoupper($type);
-        return $type === 'TINYINT' ||
-            $type === 'SMALLINT' ||
-            $type === 'MEDIUMINT' ||
-            $type === 'INT' ||
-            $type === 'INTEGER' ||
-            $type === 'BIGINT' ||
-            $type === 'FLOAT' ||
-            $type === 'DOUBLE' ||
-            $type === 'DECIMAL';
+        return in_array($type, self::INTEGER_TYPES);
     }
 
     /**
