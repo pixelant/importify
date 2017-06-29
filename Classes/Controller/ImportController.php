@@ -213,7 +213,6 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
         \Psr\Http\Message\ServerRequestInterface $request,
         \Psr\Http\Message\ResponseInterface $response
     ) {
-    
         $data = $request->getParsedBody();
         $column_names = array_keys($GLOBALS['TCA'][$data['table']]['columns']);
         $json = json_encode($column_names);

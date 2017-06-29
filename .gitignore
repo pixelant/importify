@@ -1,6 +1,9 @@
 # Exclude OSX index files
 .DS_Store
 
+#code-coverage
+/code-coverage/*
+
 # Composer
 /.Build/*
 composer.lock

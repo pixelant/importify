@@ -9,16 +9,24 @@
             "company": "Pixelant"
         }
     ],
+    "replace": {
+        "importify": "self.version"
+    },
     "require": {
-        "php": "^7.0"
+        "php": "^7.0",
+        "typo3/cms": "~8.7"
     },
     "require-dev": {
+        "nimut/testing-framework": "^1.0",
         "squizlabs/php_codesniffer": "2.*",
         "phpunit/phpunit": "^5.4"
     },
     "config": {
         "vendor-dir": ".Build/vendor",
-        "bin-dir": ".Build/bin"
+        "bin-dir": ".Build/bin",
+        "preferred-install": {
+            "typo3/cms": "source"
+        }
     },
     "autoload": {
         "psr-4": {
@@ -33,8 +41,21 @@
         }
     },
     "scripts": {
+        "post-autoload-dump": [
+            "mkdir -p .Build/Web/typo3conf/ext/",
+            "[ -L .Build/Web/typo3conf/ext/importify ] || ln -snvf ../../../../. .Build/Web/typo3conf/ext/importify"
+        ],
         "php:codesniffer": ".Build/bin/phpcs --standard=PSR2 Classes/ Tests/ *.php",
         "php:codefixer": ".Build/bin/phpcbf --standard=PSR2 Classes/ --report=diff Tests/ *.php",
-        "php:unittests": "export TYPO3_PATH_WEB=$PWD/.Build/Web && .Build/bin/phpunit -c .Build/vendor/nimut/testing-framework/res/Configuration/UnitTests.xml Tests/"
+        "php:unittests": "export TYPO3_PATH_WEB=$PWD/.Build/Web && .Build/bin/phpunit -c .Build/vendor/nimut/testing-framework/res/Configuration/UnitTests.xml Tests/ --whitelist=Classes --coverage-html code-coverage"
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "0.0.x-dev"
+        },
+        "typo3/cms": {
+            "cms-package-dir": "{$vendor-dir}/typo3/cms",
+            "web-dir": ".Build/Web"
+        }
     }
 }
