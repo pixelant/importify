@@ -77,8 +77,9 @@ Otherwise your changes will be overwritten the next time you save the extension 
 
 
 
-
+// Avoid polluting the global namespace
 (function() {
+    // Sort inputs in ascending order
     function sort() {
         var csvHeaders = [];
         $('.inputs option').each(function() {
@@ -92,7 +93,7 @@ Otherwise your changes will be overwritten the next time you save the extension 
         });
     }
 
-
+    // Matching inputs with columns
     function match() {
         $('#mapping tr').each(function() {
             var $csvColumn = $(this).find('.inputs');
@@ -104,6 +105,7 @@ Otherwise your changes will be overwritten the next time you save the extension 
     sort();
     match();
 
+    // when table change, send ajax request to get columns from the new table
     $('#table').change(function(){
         var selected = $('#table option:selected').text();
         $('#mapping > body').fadeTo(1000, 0.5);
@@ -126,6 +128,8 @@ Otherwise your changes will be overwritten the next time you save the extension 
         });
     });
 
+    // when import button clicked, send ajax request and the data to insert to database,
+    // and show if suceed or failed to the user.
     $('#importButton').click(function() {
         var importData = [];
         $('#import-data tbody tr').each(function() {
@@ -173,7 +177,6 @@ Otherwise your changes will be overwritten the next time you save the extension 
             }
         });
     });
-
 })();
 
 </script>
