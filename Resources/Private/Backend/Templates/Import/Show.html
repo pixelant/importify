@@ -30,13 +30,17 @@ Otherwise your changes will be overwritten the next time you save the extension 
      <tbody>
     <f:for each="{csvArray}" as="csvData" iteration="i">
         <tr>
-          <f:for each="{csvData}" as="value" iteration="j">
-              <td class="inputFields" data-csv-field="{csvHeader.{j.index}}">{value}</td>
+          <f:for each="{csvData}" as="value" key="csvKey" iteration="j">
+              <td id="inputFields-{i.index}-{j.index}" data-csv-field="{csvKey}">{value}<span id="errorMessage-{i.index}-{j.index}"></span></td>
           </f:for>
         </tr>
     </f:for>
     </tbody>
 </table>
+
+<style>
+
+</style>
 
 <h2>Import - Choose table and select the columns to import to</h2>
 <table id="mapping">
@@ -56,10 +60,10 @@ Otherwise your changes will be overwritten the next time you save the extension 
         <f:for each="{csvHeader}" as="input" iteration="i"> 
             <tr>
                 <td>
-                    <f:form.select class="inputs" name="inputs" options="{csvHeader}" value="{i.index}"/>
+                    <f:form.select class="inputs" name="inputs" options="{csvHeader}" />
                 </td>
                 <td>
-                    <f:form.select class="columns" name="columns" options="{fe_users_columns}" value="{i.index}"/>
+                    <f:form.select class="columns" name="columns" options="{fe_users_columns}" />
                 </td>
             </tr>
         </f:for>
@@ -70,6 +74,38 @@ Otherwise your changes will be overwritten the next time you save the extension 
 
 <!--JS script for ajax request when select-element changes and when import button clicked-->
 <script>
+
+
+
+// Avoid polluting the global namespace
+(function() {
+    // Sort inputs in ascending order
+    function sort() {
+        var csvHeaders = [];
+        $('.inputs option').each(function() {
+            csvHeaders.push($(this).val());
+        });
+
+        var counter = 0;
+        $('.inputs').each(function() {
+            $(this).val(csvHeaders[counter]);
+            counter++;
+        });
+    }
+
+    // Matching inputs with columns
+    function match() {
+        $('#mapping tr').each(function() {
+            var $csvColumn = $(this).find('.inputs');
+            var $dbColumn = $(this).find('.columns');
+            $dbColumn.val($csvColumn.val());
+        });
+    }
+
+    sort();
+    match();
+
+    // when table change, send ajax request to get columns from the new table
     $('#table').change(function(){
         var selected = $('#table option:selected').text();
         $('#mapping > body').fadeTo(1000, 0.5);
@@ -80,19 +116,20 @@ Otherwise your changes will be overwritten the next time you save the extension 
             data: {table: $('#table option:selected').text()},
             success: function(res) {
                 // clear the html for the select-element, so the options doesnt keep increase
-                $('.columns').html('html');
+                $('.columns').html('');
                 var i = 0;
                 for (var column in res){
                     $('.columns').append($('<option>', {value: res[column], text: res[column]}));
-                    // show selected option in asc order by the position in array
-                    $('.columns:eq(' + i + ') option:eq(' + i + ')').attr('selected', 'selected');
                     i++;
                 }
+                match();
                 $('#mapping > tbody').fadeTo(1000, 1);
             }
         });
     });
 
+    // when import button clicked, send ajax request and the data to insert to database,
+    // and show if suceed or failed to the user.
     $('#importButton').click(function() {
         var importData = [];
         $('#import-data tbody tr').each(function() {
@@ -102,6 +139,8 @@ Otherwise your changes will be overwritten the next time you save the extension 
                 var csvField = $(this).find('.inputs option:selected').text();
                 var databaseField = $(this).find('.columns option:selected').text();
                 if (databaseField && csvField) {
+                    // clear error message in span inside td text
+                    $('#import-data tbody tr td span').text('');
                     var csvValue = $tr.find('td[data-csv-field=' + csvField + ']').text();
                     data[databaseField] = csvValue;
                 }
@@ -115,11 +154,30 @@ Otherwise your changes will be overwritten the next time you save the extension 
             dataType: 'json',
             data: {importData: importData, table: $('#table option:selected').text()},
             success: function(res) {
+                // if has styling for errors:
+                // change class alert-danger to alert-success
+                if($('.error').hasClass( 'alert-danger' )){
+                    $('.error').removeClass('alert-danger');
+                    $('#import-data tbody tr td').addClass('alert alert-success');
+                }
+
+                // if there are errors, set class alert-danger and print error message
+                if(res.error !== null){
+                    $.each(res['error'],function(key, values){
+                        var key = Object.keys(values);
+                        var value = Object.values(values);
+                        $('#inputFields-'+key).addClass('error alert alert-danger alert-dismissible');
+                        $('.close').alert();
+                        $('#errorMessage-'+key).html(' ('+value+')');
+                    });
+                }
             },
             error: function(xhr, ajaxOptions, thrownError) {
                 var err = eval('(' + xhr.responseText + ')');
             }
         });
     });
+})();
+
 </script>
 </f:section>
