@@ -30,9 +30,37 @@ class ImportControllerTest extends \TYPO3\CMS\Core\Tests\UnitTestCase
     /**
      * @test
      */
+    public function initializeCreateActionTest()
+    {
+        $argument = $this->getMock(
+            \TYPO3\CMS\Extbase\Mvc\Controller\Argument::class,
+            ['getPropertyMappingConfiguration'],
+            [],
+            '',
+            false
+        );
+
+        $propertyFile = $this->getMock(
+            \TYPO3\CMS\Extbase\Property\PropertyMappingConfiguration::class,
+            ['setTypeConverterOptions'],
+            [],
+            '',
+            false
+        );
+        $arguments['newImport'] = $argument;
+        $this->inject($this->subject, 'arguments', $arguments);
+        $arguments['newImport']->expects(self::once())->method(
+            'getPropertyMappingConfiguration'
+        )->will($this->returnValue($propertyFile));
+
+        $this->subject->initializeCreateAction();
+    }
+
+    /**
+     * @test
+     */
     public function listActionFetchesAllImportsFromRepositoryAndAssignsThemToView()
     {
-
         $allImports = $this->getMockBuilder(\TYPO3\CMS\Extbase\Persistence\ObjectStorage::class)
             ->disableOriginalConstructor()
             ->getMock();
@@ -56,14 +84,6 @@ class ImportControllerTest extends \TYPO3\CMS\Core\Tests\UnitTestCase
      */
     public function showActionAssignsTheGivenImportToView()
     {
-        $import = $this->getMock(
-            \Pixelant\Importify\Domain\Model\Import::class,
-            ['getFile', 'getDelimeter', 'getEnclosure'],
-            [],
-            '',
-            false
-        );
-
         // CSV
         $csvContent = 'name,age,password
 "name one",1,password1
@@ -88,26 +108,34 @@ name2,2,password2';
             'password' => 'password2'
         ];
 
-        $file = $this->getMock(TYPO3\CMS\Core\Resource\File::class, ['getContents'], [], '', false);
-        $file->expects($this->any())->method('getContents')->will($this->returnValue($csvContent));
+        $import = $this->getMock(
+            \Pixelant\Importify\Domain\Model\Import::class,
+            ['getFile', 'getDelimeter', 'getEnclosure'],
+            [],
+            '',
+            false
+        );
 
-        $originalResource = $this->getMock(TYPO3\CMS\Core\Resource\File::class, ['getOriginalFile'], [], '', false);
-        $originalResource->expects($this->any())->method('getOriginalFile')->will($this->returnValue($file));
+        $file = $this->getMock(\TYPO3\CMS\Core\Resource\File::class, ['getContents'], [], '', false);
+        $file->expects($this->once())->method('getContents')->will($this->returnValue($csvContent));
+
+        $originalResource = $this->getMock(\TYPO3\CMS\Core\Resource\File::class, ['getOriginalFile'], [], '', false);
+        $originalResource->expects($this->once())->method('getOriginalFile')->will($this->returnValue($file));
 
         $fileReference = $this->getMock(
-            TYPO3\CMS\Extbase\Domain\Model\FileReference::class,
+            \TYPO3\CMS\Extbase\Domain\Model\FileReference::class,
             ['getOriginalResource'],
             [],
             '',
             false
         );
         $fileReference->expects(
-            $this->any()
+            $this->once()
         )->method('getOriginalResource')->will($this->returnValue($originalResource));
 
-        $import->expects($this->any())->method('getFile')->will($this->returnValue($fileReference));
-        $import->expects($this->any())->method('getDelimeter')->will($this->returnValue($delimiter));
-        $import->expects($this->any())->method('getEnclosure')->will($this->returnValue($fieldEnclosure));
+        $import->expects($this->once())->method('getFile')->will($this->returnValue($fileReference));
+        $import->expects($this->once())->method('getDelimeter')->will($this->returnValue($delimiter));
+        $import->expects($this->once())->method('getEnclosure')->will($this->returnValue($fieldEnclosure));
 
         // Fake fe_users TCA columns
         $feUserColumns = [
@@ -149,21 +177,71 @@ name2,2,password2';
     }
 
     /**
-     * @fest
+     * @test
      */
-    public function createActionAddsTheGivenImportToImportRepository()
+    public function newActionAssignsTheGivenImportToView()
     {
-        $import = new \Pixelant\Importify\Domain\Model\Import();
+        $newImport = new \Pixelant\Importify\Domain\Model\Import();
+
+        $view = $this->getMockBuilder(\TYPO3\CMS\Extbase\Mvc\View\ViewInterface::class)->getMock();
+        $this->inject($this->subject, 'view', $view);
+        $view->expects(self::once())->method('assign')->with('newImport', $newImport);
+
+        $this->subject->newAction($newImport);
+    }
+
+    /**
+     * @test
+     */
+    public function createActionTest()
+    {
+        $importNoFile = $this->getMock(
+            \Pixelant\Importify\Domain\Model\Import::class,
+            [],
+            [],
+            '',
+            false
+        );
+        $importNoFile->expects($this->once())->method('getFile')->will($this->returnValue(null));
+
+        $import = $this->getMock(
+            \Pixelant\Importify\Domain\Model\Import::class,
+            ['getFile'],
+            [],
+            '',
+            false
+        );
+        $import->expects($this->once())->method('getFile')->will($this->returnValue('test'));
 
         $importRepository = $this->getMockBuilder(\Pixelant\Importify\Domain\Repository\ImportRepository::class)
             ->setMethods(['add'])
             ->disableOriginalConstructor()
             ->getMock();
-
         $importRepository->expects(self::once())->method('add')->with($import);
         $this->inject($this->subject, 'importRepository', $importRepository);
 
+        $persistenceManager = $this->getMockBuilder(
+            \TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager::class
+        )->getMock();
+
+        $objectManager = $this->getMockBuilder(\TYPO3\CMS\Extbase\Object\ObjectManager::class)->getMock();
+        $this->inject($this->subject, 'objectManager', $objectManager);
+        $objectManager->expects(self::once())->method('get')->with(
+            \TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager::class
+        )->will($this->returnValue($persistenceManager));
+
+        $persistenceManager->expects(self::once())->method('persistAll')->will($this->returnValue(true));
+
         $this->subject->createAction($import);
+        $this->subject->createAction($importNoFile);
+    }
+
+    /**
+     * @test
+     */
+    public function uploadActionTest()
+    {
+        $this->subject->uploadAction('test');
     }
 
     /**
@@ -230,25 +308,105 @@ name2,2,password2';
         ];
         $GLOBALS['TCA']['fe_users']['columns'] = $feUserColumns;
         $data['table']='fe_users';
+
         $request = $this->getMock(\TYPO3\CMS\Core\Http\ServerRequest::class, ['getParsedBody'], [], '', false);
-        $request->expects($this->any())->method('getParsedBody')->will($this->returnValue($data));
+        $request->expects($this->once())->method('getParsedBody')->will($this->returnValue($data));
 
         $write = $this->getMock(\TYPO3\CMS\Core\Http\Stream::class, ['write'], [], '', false);
-        $write->expects($this->any())->method('write')->will($this->returnValue('test'));
-/*
-        $body = $this->getMock(\TYPO3\CMS\Core\Http\Message::class, ['getBody'], [], '', false);
-        $body->expects($this->any())->method('getBody')->will($this->returnValue($write));
-*/
+        $write->expects($this->once())->method('write')->will($this->returnValue('test'));
+
         $response = $this->getMock(\TYPO3\CMS\Core\Http\Response::class, ['getBody'], [], '', false);
-        $response->expects($this->any())->method('getBody')->will($this->returnValue($write));
+        $response->expects($this->once())->method('getBody')->will($this->returnValue($write));
 
         $this->subject->getTableColumnNameAction($request, $response);
-        /*
-        $data = $request->getParsedBody();
-        $column_names = array_keys($GLOBALS['TCA'][$data['table']]['columns']);
-        $json = json_encode($column_names);
-        $response->getBody()->write($json);
-        return $response;
-        */
+    }
+
+    /**
+     * @test
+     */
+    public function invalidInputTest()
+    {
+        $column = $this->getMock(
+            \Doctrine\DBAL\Schema\Column::class,
+            ['getType','getLength','getUnsigned'],
+            [],
+            '',
+            false
+        );
+
+        // test invalid input string and column type int
+        $column->expects($this->any())->method('getType')->will($this->returnValue('int'));
+        self::assertFalse(is_null($this->subject->invalidInput($column, 'test', 'lastlogin')));
+
+        // test invalid input signed int and column type unsigned int
+        $column->expects($this->any())->method('getUnsigned')->will($this->returnValue('1'));
+        self::assertFalse(is_null($this->subject->invalidInput($column, '-1', 'lastlogin')));
+
+        // test invalid input unsigned int length and column length 4294967295
+        $column->expects($this->once())->method('getLength')->will($this->returnValue('10'));
+        self::assertFalse(is_null($this->subject->invalidInput($column, '4294967296', 'lastlogin')));
+
+        // test invalid input string length and column string
+        $column->expects($this->any())->method('getType')->will($this->returnValue('string'));
+        self::assertFalse(is_null($this->subject->invalidInput($column, 'helloworlds', 'username')));
+    }
+
+    /**
+     * @test
+     */
+    public function invalidInputLenghtTest()
+    {
+        // test too long string input
+        self::assertTrue($this->subject->invalidInputLenght('string', '0', '4', 'hello'));
+
+        // test too short numeric input for signed column
+        self::assertTrue($this->subject->invalidInputLenght('tinyint', '0', '10', '-129'));
+        self::assertTrue($this->subject->invalidInputLenght('smallint', '0', '10', '-32769'));
+        self::assertTrue($this->subject->invalidInputLenght('mediumint', '0', '10', '-8388609'));
+        self::assertTrue($this->subject->invalidInputLenght('int', '0', '10', '-2147483649'));
+        self::assertTrue($this->subject->invalidInputLenght('integer', '0', '10', '-2147483649'));
+        self::assertTrue($this->subject->invalidInputLenght('bigint', '0', '10', '-9.2233720368549E+18'));
+        self::assertTrue($this->subject->invalidInputLenght('float', '0', '10', '-3.4028234661E+38'));
+        self::assertTrue($this->subject->invalidInputLenght('double', '0', '10', '-1.791E+308'));
+        self::assertTrue($this->subject->invalidInputLenght('decimal', '0', '10', '-1.0001E+38'));
+
+        // test too long numeric input for signed column
+        self::assertTrue($this->subject->invalidInputLenght('tinyint', '0', '10', '128'));
+        self::assertTrue($this->subject->invalidInputLenght('smallint', '0', '10', '32768'));
+        self::assertTrue($this->subject->invalidInputLenght('mediumint', '0', '10', '8388608'));
+        self::assertTrue($this->subject->invalidInputLenght('int', '0', '10', '2147483648'));
+        self::assertTrue($this->subject->invalidInputLenght('integer', '0', '10', '2147483648'));
+        self::assertTrue($this->subject->invalidInputLenght('bigint', '0', '10', '9.2233720368549E+18'));
+        self::assertTrue($this->subject->invalidInputLenght('float', '0', '10', '3.4028234661E+38'));
+        self::assertTrue($this->subject->invalidInputLenght('double', '0', '10', '1.791E+308'));
+        self::assertTrue($this->subject->invalidInputLenght('decimal', '0', '10', '1.0001E+38'));
+
+        // test too long numeric input for unsigned column
+        self::assertTrue($this->subject->invalidInputLenght('tinyint', '1', '10', '256'));
+        self::assertTrue($this->subject->invalidInputLenght('smallint', '1', '10', '65536'));
+        self::assertTrue($this->subject->invalidInputLenght('mediumint', '1', '10', '16777216'));
+        self::assertTrue($this->subject->invalidInputLenght('int', '1', '10', '4294967296'));
+        self::assertTrue($this->subject->invalidInputLenght('integer', '1', '10', '4294967296'));
+        self::assertTrue($this->subject->invalidInputLenght('float', '1', '10', '3.4028234661E+38'));
+        self::assertTrue($this->subject->invalidInputLenght('double', '1', '10', '1.791E+308'));
+
+        // numeric length too long, test if valid input instead, or need to convert to float
+        self::assertFalse($this->subject->invalidInputLenght('bigint', '1', '10', '999999999'));
+        self::assertFalse($this->subject->invalidInputLenght('decimal', '1', '10', '999999999'));
+
+        // test int input for unsigned column
+        self::assertTrue($this->subject->invalidInputLenght('tinyint', '1', '10', '-1'));
+        self::assertTrue($this->subject->invalidInputLenght('smallint', '1', '10', '-1'));
+        self::assertTrue($this->subject->invalidInputLenght('mediumint', '1', '10', '-1'));
+        self::assertTrue($this->subject->invalidInputLenght('int', '1', '10', '-1'));
+        self::assertTrue($this->subject->invalidInputLenght('integer', '1', '10', '-1'));
+        self::assertTrue($this->subject->invalidInputLenght('bigint', '1', '10', '-1'));
+        self::assertTrue($this->subject->invalidInputLenght('float', '1', '10', '-1.1'));
+        self::assertTrue($this->subject->invalidInputLenght('double', '1', '10', '-1.1'));
+        self::assertTrue($this->subject->invalidInputLenght('decimal', '1', '10', '-1'));
+
+        // test wrong type
+        self::assertNull($this->subject->invalidInputLenght('test', '1', '10', '1'));
+        self::assertNull($this->subject->invalidInputLenght('tetst', '0', '10', '1'));
     }
 }
