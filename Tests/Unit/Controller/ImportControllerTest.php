@@ -324,42 +324,6 @@ name2,2,password2';
     /**
      * @test
      */
-    public function importFileActionTest()
-    {
-        // Fake fe_users TCA columns
-        $feUserColumns = [
-            'username' => [],
-            'pid' => [],
-            'uid' => [],
-            'password' => [],
-        ];
-        $GLOBALS['TCA']['fe_users']['columns'] = $feUserColumns;
-        $data['table'] = 'fe_users';
-
-        $request = $this->getMock(\TYPO3\CMS\Core\Http\ServerRequest::class, ['getParsedBody'], [], '', false);
-        $request->expects($this->any())->method('getParsedBody')->will($this->returnValue($data));
-        $response = $this->getMock(\TYPO3\CMS\Core\Http\Response::class, ['getBody'], [], '', false);
-        $general = $this->getMock(\TYPO3\CMS\Core\Utility\GeneralUtility::class, ['makeInstance'], [], '', false);
-        $schema = $this->getMock(\Doctrine\DBAL\Schema\MySqlSchemaManager::class, [], [], '', false);
-        $conn = $this->getMock(
-            \TYPO3\CMS\Core\Database\ConnectionPool::class,
-            ['getConnectionForTable'],
-            [],
-            '',
-            false
-        );
-        $connection = $this->getMock(\TYPO3\CMS\Core\Database\Connection::class, ['getSchemaManager'], [], '', false);
-
-        $general->expects($this->any())->method('makeInstance')->will($this->returnValue($conn));
-        $connection->expects($this->any())->method('getSchemaManager')->will($this->returnValue($schema));
-        $conn->expects($this->any())->method('getConnectionForTable')
-        ->with($data['table'])->will($this->returnValue($connection));
-        $this->subject->importFileAction($request, $response);
-    }
-
-    /**
-     * @test
-     */
     public function invalidInputTest()
     {
         $column = $this->getMock(
