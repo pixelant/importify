@@ -29,7 +29,6 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
     const MAX_INT_UNSIGNED = 4294967295;
     const MAX_BIGINT_UNSIGNED = 18446744073709551615;
     const MAX_DECIMAL_UNSIGNED = 2*10**38;
-    const MIN_UNSIGNED = 0;
 
     const MAX_TINYINT_SIGNED = 127;
     const MAX_SMALLINT_SIGNED = 32767;
@@ -60,14 +59,6 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
      * @inject
      */
     protected $importRepository = null;
-
-    /**
-     * Set TypeConverter option for image upload
-     */
-    public function initializeUpdateAction()
-    {
-        $this->setTypeConverterConfigurationForFileUpload('import');
-    }
 
     /**
      * Set TypeConverter option for image upload
@@ -259,11 +250,6 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
         // insert if $error is not changed
         if ($error === null) {
             foreach ($importData as $data) {
-                foreach ($data as $key => $value) {
-                    if ($invalid) {
-                        unset($data[$key]);
-                    }
-                }
                 $queryBuilder->values($data)->execute();
             }
         }
@@ -357,10 +343,8 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
                         return self::MAX_BIGINT_UNSIGNED < $input;
                     case 'DECIMAL':
                         return self::MAX_DECIMAL_UNSIGNED < $input;
-                    default:
-                        echo 'UNSIGNED DEFAULT ERROR!!';
                 }
-            } else {
+            } elseif ($typeIsNumeric && !$databaseIsUnsigned) {
                 switch ($type) {
                     case 'TINYINT':
                         return self::MAX_TINYINT_SIGNED < $input || self::MIN_TINYINT_SIGNED > $input;
@@ -379,9 +363,9 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
                         return self::MAX_DOUBLE_SIGNED < $input || self::MIN_DOUBLE_SIGNED > $input;
                     case 'DECIMAL':
                         return self::MAX_DECIMAL_SIGNED < $input || self::MIN_DECIMAL_SIGNED > $input;
-                    default:
-                        echo 'SIGNED ERROR DEFAULT!!';
                 }
+            } else {
+                return true;
             }
         }
     }
