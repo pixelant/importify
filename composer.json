@@ -35,7 +35,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Pixelant\\Crowdfunding\\Tests\\": "Tests/",
+            "Pixelant\\Importify\\Tests\\": "Tests/",
             "TYPO3\\CMS\\Core\\Tests\\": ".Build/vendor/typo3/cms/typo3/sysext/core/Tests/",
             "TYPO3\\CMS\\Fluid\\Tests\\": ".Build/vendor/typo3/cms/typo3/sysext/fluid/Tests/"
         }
@@ -47,8 +47,8 @@
         ],
         "php:codesniffer": ".Build/bin/phpcs --standard=PSR2 Classes/ Tests/ *.php",
         "php:codefixer": ".Build/bin/phpcbf --standard=PSR2 Classes/ --report=diff Tests/ *.php",
-        "php:unittests": "export TYPO3_PATH_WEB=$PWD/.Build/Web && .Build/bin/phpunit -c .Build/vendor/nimut/testing-framework/res/Configuration/UnitTests.xml Tests/ --whitelist=Classes --coverage-html code-coverage",
-        "php:functests": "export TYPO3_PATH_WEB=$PWD/.Build/Web && .Build/bin/phpunit -c .Build/vendor/nimut/testing-framework/res/Configuration/FunctionalTests.xml Tests/ --whitelist=Classes --coverage-html code-coverage"
+        "php:unittests": "export TYPO3_PATH_WEB=$PWD/.Build/Web && .Build/bin/phpunit -c .Build/vendor/nimut/testing-framework/res/Configuration/UnitTests.xml Tests/Unit/ --whitelist=Classes --coverage-html code-coverage/unit",
+        "php:functionaltests": "export typo3DatabaseName='t3kit' typo3DatabaseUsername='t3kit' typo3DatabasePassword='t3kit1234' typo3DatabaseHost='127.0.0.1' typo3DatabasePort='3307' TYPO3_PATH_WEB=$PWD/.Build/Web &&   .Build/bin/phpunit -c .Build/vendor/nimut/testing-framework/res/Configuration/FunctionalTests.xml Tests/Functional/ --whitelist=Classes --coverage-html code-coverage/functional"
     },
     "extra": {
         "branch-alias": {
